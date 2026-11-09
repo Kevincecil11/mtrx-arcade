@@ -1,34 +1,24 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Checkers · MTRX™ Arcade</title><meta name="description" content="Checkers against an AI with five real difficulty levels, visual move replays, illustrated strategy and drills. Designed by MTRX™.">
+<title>Checkers · MTRX™ Arcade</title><meta name="description" content="Checkers against an AI with five real difficulty levels, smooth play, best times, picture replays, illustrated strategy and drills. Designed by MTRX™.">
 <meta name="theme-color" content="#ECEAE4"><script>try{var t=localStorage.getItem("mtrx-theme");if(t===null)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"";document.documentElement.dataset.theme=t;if(t==="dark")document.querySelector('meta[name="theme-color"]').content="#0E0E0C"}catch(e){}</script>
-<link rel="stylesheet" href="assets/mtrx-theme.css?v=3"><link rel="stylesheet" href="assets/arcade.css?v=3"><link rel="stylesheet" href="assets/checkers.css?v=3">
-</head><body data-board="walnut">
-<div class="topbar"><a href="index.html" id="home" aria-label="MTRX Arcade home"></a><span class="crumb">Arcade / Checkers</span><span class="spacer"></span>
-<button class="mtrx-btn mtrx-btn--secondary sm" id="learnBtn"><span class="long">How to play &amp; strategy</span><span class="short">Learn</span></button>
-<div class="mtrx-segmented" id="themeSeg"><button aria-pressed="true" data-t="">Light</button><button aria-pressed="false" data-t="dark">Dark</button></div></div>
-<main><div class="ck-wrap">
-<section class="board-col" aria-label="Board">
-  <div class="style-menu bsize" id="styleMenu" role="group" aria-label="Board style"></div>
-  <div class="review-bar bsize" id="reviewBar" hidden><div><span class="mtrx-label" style="margin:0">Replay</span><b id="revTxt"></b></div>
-    <div class="btn-row"><button class="mtrx-btn mtrx-btn--ghost sm" id="revPrev" aria-label="Previous move">‹ Prev</button><button class="mtrx-btn mtrx-btn--ghost sm" id="revNext" aria-label="Next move">Next ›</button><button class="mtrx-btn mtrx-btn--primary sm" id="revLive">Back to game</button></div></div>
-  <div class="cboard bsize" id="board"><div class="squares" id="squares"></div><div class="pieces" id="pieces"></div><svg class="arrows" id="arrows" viewBox="0 0 8 8" aria-hidden="true"></svg></div>
-  <div class="below bsize">
-    <div class="status" id="status" aria-live="polite">Setting up the board…</div>
-    <div class="under-row"><div class="tally" id="tally"></div>
-      <div class="btn-row"><button class="mtrx-btn mtrx-btn--primary sm" id="newBtn">New game</button><button class="mtrx-btn mtrx-btn--secondary sm" id="undoBtn">Undo</button><button class="mtrx-btn mtrx-btn--secondary sm" id="hintBtn">Best move?</button></div></div>
+<link rel="stylesheet" href="assets/mtrx-theme.css?v=3"><link rel="stylesheet" href="assets/arcade.css?v=3"><link rel="stylesheet" href="assets/checkers.css?v=4">
+</head><body data-board="walnut" class="ck">
+<div class="topbar"><a href="index.html" id="home" aria-label="MTRX Arcade home"></a><span class="crumb">Checkers</span><span class="spacer"></span>
+<button class="icon-btn" id="learnBtn" aria-label="How to play and strategy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg><span>Learn</span></button>
+<button class="icon-btn" id="menuBtn" aria-label="Game menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button></div>
+<main class="ck-main">
+  <div class="bar drill-bar bsize" id="drillBar" hidden><div><span class="mtrx-label" style="margin:0">Drill</span><b id="drillTxt"></b></div><button class="mtrx-btn mtrx-btn--ghost sm" id="drillExit">Exit drill</button></div>
+  <div class="bar review-bar bsize" id="reviewBar" hidden><div><span class="mtrx-label" style="margin:0">Replay</span><b id="revTxt"></b></div>
+    <div class="btn-row"><button class="mtrx-btn mtrx-btn--ghost sm" id="revPrev" aria-label="Previous move">‹</button><button class="mtrx-btn mtrx-btn--ghost sm" id="revPlay">Play</button><button class="mtrx-btn mtrx-btn--ghost sm" id="revNext" aria-label="Next move">›</button><button class="mtrx-btn mtrx-btn--primary sm" id="revLive">Back to game</button></div></div>
+  <div class="hud bsize" aria-label="Score and time">
+    <div class="who-hud" id="hudYou"><i class="chip" id="youChip"></i><span><small>You</small><b id="tookYou">0</b></span></div>
+    <div class="clock"><b id="clock">0:00</b><small id="clockSub">Medium</small></div>
+    <div class="who-hud right" id="hudAi"><span><small id="aiName">AI</small><b id="tookAi">0</b></span><i class="chip" id="aiChip"></i></div>
   </div>
-</section>
-<aside class="panel">
-  <div><div class="mtrx-label">MTRX™ Arcade</div><h1>Checkers</h1></div>
-  <div><div class="mtrx-label">Difficulty</div><div class="mtrx-segmented diff" id="diffSeg"></div><p class="lvl-note" id="lvlNote"></p></div>
-  <div class="opts">
-    <div><div class="mtrx-label">You play</div><div class="mtrx-segmented" id="sideSeg"><button data-s="1">Black · first</button><button data-s="-1">White</button></div></div>
-    <div><div class="mtrx-label">Jumps</div><div class="mtrx-segmented" id="ruleSeg"><button data-f="0">Optional</button><button data-f="1">Forced</button></div></div>
-  </div>
-  <div id="coach"></div>
-  <div><div class="mtrx-label">Moves · tap one to replay it</div><div class="moves" id="moves"></div></div>
-</aside>
-</div></main>
-<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>MTRX checkers engine · v2.1</span><span>mtrxdigital.com</span></footer></div>
+  <div class="cboard bsize" id="board"><div class="squares" id="squares"></div><div class="pieces" id="pieces"></div><svg class="arrows" id="arrows" viewBox="0 0 8 8" aria-hidden="true"></svg><div class="overlay" id="overlay" hidden></div></div>
+  <div class="status-line bsize" id="status" aria-live="polite">Setting up the board…</div>
+  <div class="actions bsize"><button class="mtrx-btn mtrx-btn--secondary" id="undoBtn">Undo</button><button class="mtrx-btn mtrx-btn--primary" id="hintBtn">Best move</button></div>
+</main>
+<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>MTRX checkers engine · v3</span><span>mtrxdigital.com</span></footer></div>
 <script>(function(){var s=document.getElementById("status");function show(m){if(!s)return;s.textContent="Something went wrong ("+m+"). Pull down to refresh. If it keeps happening, screenshot this box.";s.className="status lose"}addEventListener("error",function(e){if(!e.filename||e.filename.indexOf(location.origin)===0)show(e.message||"script error")});addEventListener("unhandledrejection",function(e){var r=e.reason;show(String(r&&r.message||r))});setTimeout(function(){if(s&&s.textContent.indexOf("Setting up the board")===0)show("the game script did not start")},8000)})();</script>
-<script type="module" src="js/checkers.js?v=3"></script></body></html>
+<script type="module" src="js/checkers.js?v=4"></script></body></html>
