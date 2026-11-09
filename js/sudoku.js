@@ -1,6 +1,7 @@
 // MTRX™ Arcade · Sudoku. Engine: sudoku-core (MIT). UI: Designed by MTRX™
-import { WORDMARK } from './wordmark.js';
-import { mountLearn, randInt } from './learn.js';
+import { WORDMARK } from './wordmark.js?v=3';
+import { mountLearn, randInt } from './learn.js?v=3';
+import { mountThemeToggle } from './theme.js?v=3';
 
 const ENGINE = ['https://cdn.jsdelivr.net/npm/sudoku-core@4/+esm', 'https://esm.sh/sudoku-core@4'];
 // Five levels, mapped to sudoku-core's technique-rated scale (L1 to L10)
@@ -15,10 +16,7 @@ const $ = (s) => document.querySelector(s);
 $('#home').innerHTML = WORDMARK;
 
 // ---------- theme ----------
-const setTheme = (t) => { document.body.dataset.theme = t; localStorage.setItem('mtrx-theme', t);
-  document.querySelectorAll('#themeSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.t === t)); };
-document.querySelectorAll('#themeSeg button').forEach((b) => (b.onclick = () => setTheme(b.dataset.t)));
-setTheme(localStorage.getItem('mtrx-theme') || '');
+mountThemeToggle();
 
 // ---------- state ----------
 let lib = null, worker = null;
@@ -184,7 +182,7 @@ function newPuzzle(seed, idx = levelIdx, coreOverride) {
   cells.forEach((c) => { c.textContent = ''; c.className = 'cell'; });
   setStatus(`Building a ${L.name.toLowerCase()} puzzle… harder levels can take a few seconds.`);
   worker?.terminate();
-  worker = new Worker(new URL('./sudoku-worker.js', import.meta.url), { type: 'module' });
+  worker = new Worker(new URL('./sudoku-worker.js?v=3', import.meta.url), { type: 'module' });
   worker.onmessage = ({ data }) => {
     if (!data.ok) { setStatus(data.error, 'lose'); return; }
     S = { level: core, seed: data.seed, givens: data.puzzle.slice(), values: data.puzzle.slice(), notes: Array.from({ length: 81 }, () => new Set()),
