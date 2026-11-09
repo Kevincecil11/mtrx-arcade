@@ -1,5 +1,5 @@
 // Learn drawer: open any time, game state is untouched. Designed by MTRX™
-export function mountLearn({ title, tabs, onOpen, label = 'Learn' }) {
+export function mountLearn({ title, tabs, onOpen, onClose, label = 'Learn' }) {
   const scrim = document.createElement('div'); scrim.className = 'scrim';
   const d = document.createElement('aside'); d.className = 'drawer'; d.setAttribute('aria-label', title);
   d.innerHTML = `<header><div><div class="mtrx-label" style="margin:0">${label}</div><h2 style="margin:0;font-size:var(--text-2xl)">${title}</h2></div>
@@ -13,11 +13,11 @@ export function mountLearn({ title, tabs, onOpen, label = 'Learn' }) {
     body.innerHTML = tabs[i].html; body.scrollTop = 0; tabs[i].mount?.(body);
   };
   d.querySelectorAll('.tabs button').forEach((b) => (b.onclick = () => show(+b.dataset.i)));
-  const close = () => { d.classList.remove('on'); scrim.classList.remove('on'); };
-  const open = (i = 0) => { show(i); d.classList.add('on'); scrim.classList.add('on'); onOpen?.(i); };
+  const close = () => { const was = d.classList.contains('on'); d.classList.remove('on'); scrim.classList.remove('on'); if (was) onClose?.(); };
+  const open = (i = 0) => { show(i); const was = d.classList.contains('on'); d.classList.add('on'); scrim.classList.add('on'); if (!was) onOpen?.(i); };
   const refresh = () => { const cur = [...d.querySelectorAll('.tabs button')].findIndex((b) => b.getAttribute('aria-selected') === 'true'); const top = body.scrollTop; show(Math.max(0, cur)); body.scrollTop = top; };
   d.querySelector('[data-close]').onclick = close; scrim.onclick = close;
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && d.classList.contains('on')) close(); });
   return { open, close, refresh, isOpen: () => d.classList.contains('on') };
 }
 // Secure randomness: every puzzle seed and every AI coin flip comes from here
