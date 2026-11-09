@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MTRX™ Arcade</title><meta name="description" content="Classic strategy games with honest difficulty and real coaching. Designed by MTRX™.">
+<link rel="stylesheet" href="assets/mtrx-theme.css"><link rel="stylesheet" href="assets/arcade.css">
+<style>
+.hero{padding:var(--space-8) 0 var(--space-7)}
+.hero .mtrx-display{font-size:clamp(64px,12vw,150px);color:var(--accent)}
+.hero p{font-size:var(--text-lg);color:var(--text-muted);max-width:620px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-5)}
+.tile{display:flex;flex-direction:column;gap:var(--space-3);text-decoration:none;min-height:260px;position:relative}
+.tile .mtrx-numeral{font-size:56px}.tile h2{font-size:var(--text-2xl);margin:0}.tile p{color:var(--text-muted);margin:0;flex:1}
+.tile.soon{opacity:.55;pointer-events:none}
+.tile .motif{position:absolute;top:24px;right:24px;width:36px;height:36px}
+</style></head><body>
+<div class="topbar"><span id="home"></span><span class="crumb">Arcade</span><span class="spacer"></span>
+<div class="mtrx-segmented" id="themeSeg"><button aria-pressed="true" data-t="">Light</button><button aria-pressed="false" data-t="dark">Dark</button></div></div>
+<main><section class="hero"><div class="mtrx-label">MTRX™ Arcade</div><div class="mtrx-display">PLAY.</div>
+<p>Five classic strategy games. Five honest levels each, from genuinely easy to genuinely hard. Strategy guides and live coaching any time you want them.</p></section>
+<div class="tiles">
+<a class="mtrx-card mtrx-card--interactive tile" href="sudoku.html"><span class="mtrx-numeral">01</span><h2>Sudoku</h2><p>Every puzzle unique and rated by the techniques it needs. "Teach me a move" explains the logic on your own board.</p><span class="mtrx-tag mtrx-tag--mars" style="align-self:flex-start">Play now</span></a>
+<a class="mtrx-card mtrx-card--interactive tile" href="checkers.html"><span class="mtrx-numeral">02</span><h2>Checkers</h2><p>An AI that searches up to 9 moves ahead, a random opening every game, and endgame drills.</p><span class="mtrx-tag mtrx-tag--mars" style="align-self:flex-start">Play now</span></a>
+<div class="mtrx-card tile soon"><span class="mtrx-numeral">03</span><h2>Chess</h2><p>Stockfish under the hood, five calibrated levels, openings and tactics trainer.</p><span class="mtrx-tag" style="align-self:flex-start">Next drop</span></div>
+<div class="mtrx-card tile soon"><span class="mtrx-numeral">04</span><h2>Go</h2><p>KataGo networks in the browser on 9×9, 13×13 and 19×19.</p><span class="mtrx-tag" style="align-self:flex-start">Next drop</span></div>
+<div class="mtrx-card tile soon"><span class="mtrx-numeral">05</span><h2>Crossword</h2><p>Fresh grids from a graded clue bank, easy to cryptic.</p><span class="mtrx-tag" style="align-self:flex-start">Next drop</span></div>
+</div></main>
+<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Property of MTRX Digital</span><span>mtrxdigital.com</span></footer></div>
+<script type="module">
+import { WORDMARK } from './js/wordmark.js';
+document.getElementById('home').innerHTML = WORDMARK;
+const setTheme = (t) => { document.body.dataset.theme = t; localStorage.setItem('mtrx-theme', t);
+  document.querySelectorAll('#themeSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.t === t)); };
+document.querySelectorAll('#themeSeg button').forEach((b) => (b.onclick = () => setTheme(b.dataset.t)));
+setTheme(localStorage.getItem('mtrx-theme') || '');
+</script></body></html>

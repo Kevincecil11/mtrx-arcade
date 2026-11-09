@@ -1,0 +1,42 @@
+/* MTRX Arcade layout · Designed by MTRX™ · Property of MTRX Digital */
+body{min-height:100vh;display:flex;flex-direction:column}
+.wm{display:block;height:22px;width:auto;color:var(--text)}
+.topbar{display:flex;align-items:center;gap:var(--space-5);padding:var(--space-4) var(--gutter);border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:20}
+.topbar a{text-decoration:none}.topbar .crumb{font-weight:700;font-size:var(--text-sm);color:var(--text-muted)}
+.topbar .spacer{flex:1}
+main{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:var(--space-6) var(--gutter)}
+.game-wrap{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:var(--space-7);align-items:start}
+@media(max-width:960px){.game-wrap{grid-template-columns:1fr}}
+.panel{display:flex;flex-direction:column;gap:var(--space-5)}
+.panel h1{font-size:var(--text-3xl);margin:0}
+.stat-row{display:flex;gap:var(--space-5)}.stat{display:flex;flex-direction:column}.stat b{font-size:var(--text-xl)}
+.status{min-height:48px;padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);background:var(--surface-sunk);font-weight:700}
+.status.win{background:var(--mtrx-moss);color:var(--mtrx-jane)}.status.lose{background:var(--mtrx-steel-red);color:var(--mtrx-canvas)}
+.btn-row{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.mtrx-btn.sm{min-height:36px;padding:0 var(--space-4);font-size:var(--text-xs)}
+.diff{flex-wrap:wrap;border-radius:var(--radius-lg)}
+.diff button{flex:1 1 auto}
+.footer-wrap{width:100%;max-width:1240px;margin:0 auto;padding:0 var(--gutter)}
+/* overlay + learn drawer */
+.scrim{position:fixed;inset:0;background:rgb(14 14 12 / .45);opacity:0;pointer-events:none;transition:opacity var(--dur-base);z-index:40}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(560px,100%);background:var(--surface);border-left:1px solid var(--border);z-index:50;transform:translateX(100%);transition:transform var(--dur-slow) var(--ease-out);display:flex;flex-direction:column}
+.drawer.on{transform:none}
+.drawer header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-5) var(--space-6);border-bottom:1px solid var(--border)}
+.drawer .tabs{display:flex;gap:4px;padding:var(--space-3) var(--space-6);border-bottom:1px solid var(--border);overflow-x:auto}
+.drawer .tabs button{border:0;background:transparent;font:700 var(--text-sm) var(--font-sans);color:var(--text-muted);padding:8px 14px;border-radius:var(--radius-pill);cursor:pointer;white-space:nowrap}
+.drawer .tabs button[aria-selected="true"]{background:var(--text);color:var(--bg)}
+.drawer .body{padding:var(--space-6);overflow-y:auto;flex:1}
+.drawer .body h3{font-size:var(--text-xl);margin-top:var(--space-6)}
+.drawer .body h3:first-child{margin-top:0}
+.drawer .body p,.drawer .body li{color:var(--text-muted)}
+.drawer .body li{margin-bottom:var(--space-2)}
+.drawer .body b{color:var(--text)}
+.lesson{border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);margin-bottom:var(--space-4);background:var(--bg)}
+.lesson .mtrx-numeral{font-size:32px}
+.lvl{display:inline-block;margin-left:8px}
+kbd{font:700 12px var(--font-sans);border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:1px 6px;background:var(--surface)}
+.loading{display:flex;align-items:center;justify-content:center;min-height:320px;color:var(--text-muted);font-weight:700;gap:12px}
+.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{padding:var(--space-5);border-radius:var(--radius-md);background:var(--mtrx-jane);color:var(--mtrx-ink)}

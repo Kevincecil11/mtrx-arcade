@@ -1,0 +1,184 @@
+/* ==========================================================================
+   MTRX™ Theme  ·  v1.0  ·  November 2026
+   Designed by MTRX™ · Property of MTRX Digital · mtrxdigital.com
+   One file. Drop it into any project (plain HTML, React, shadcn/ui, Tailwind).
+   Logic stays whatever the library ships; this file only carries the brand.
+   ========================================================================== */
+
+/* ---------- 1. Typefaces (two faces only, served from their official free CDNs) ---------- */
+@import url("https://api.fontshare.com/v2/css?f[]=tanker@400&display=swap");      /* Tanker, ITF Fontshare licence */
+@import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&display=swap"); /* Nunito Sans, SIL OFL */
+
+:root {
+  /* ---------- 2. Primitive palette (from the MTRX identity) ---------- */
+  --mtrx-mars:      #ED691D;  /* Mars Yellow: the signature accent        */
+  --mtrx-ink:       #0E0E0C;  /* Ink: screen black                        */
+  --mtrx-black:     #000000;  /* Black: print rich black only             */
+  --mtrx-canvas:    #ECEAE4;  /* Canvas: default light background         */
+  --mtrx-paper:     #F6F5F1;  /* Paper: raised light surface (never #FFF) */
+  --mtrx-moss:      #697132;  /* Moss: wildlife / outdoor vertical         */
+  --mtrx-jane:      #F4E3B2;  /* Jane: warm panels, quotes                 */
+  --mtrx-steel-red: #A44A3F;  /* Dark Steel Red: errors, "don't"           */
+  --mtrx-gunmetal:  #2F3E46;  /* Light Gunmetal: technical / BENEATH       */
+  /* neutrals, light to dark */
+  --mtrx-cloud:     #EDEFF7;
+  --mtrx-smoke:     #D3D6E0;
+  --mtrx-steel:     #BCBFCC;
+  --mtrx-space:     #9DA2B3;
+  --mtrx-graphite:  #6E7180;
+  --mtrx-arsenic:   #40424D;
+  --mtrx-phantom:   #1E1E24;
+
+  /* ---------- 3. Semantic roles: light (default) ---------- */
+  --bg:            var(--mtrx-canvas);
+  --surface:       var(--mtrx-paper);
+  --surface-sunk:  #E2DFD7;
+  --text:          var(--mtrx-ink);       /* 16.1:1 on canvas */
+  --text-muted:    var(--mtrx-arsenic);   /* 8.3:1 on canvas. Graphite is 4.0:1: large text only */
+  --text-subtle:   var(--mtrx-graphite);  /* metadata 18px+ or decorative */
+  --border:        var(--mtrx-steel);
+  --border-strong: var(--mtrx-ink);
+  --accent:        var(--mtrx-mars);
+  --on-accent:     var(--mtrx-ink);       /* ink on mars 6.1:1. White on mars fails (3.2:1) */
+  --focus:         var(--mtrx-mars);
+  --success:       var(--mtrx-moss);
+  --danger:        var(--mtrx-steel-red);
+  --highlight:     var(--mtrx-jane);
+
+  /* ---------- 4. Type ---------- */
+  --font-display: "Tanker", "Arial Black", Impact, sans-serif;     /* numerals, series words, logo-adjacent */
+  --font-sans:    "Nunito Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;  /* code only */
+  /* Major-third scale (1.25) on a 16px base */
+  --text-xs:   0.75rem;   /* 12  labels */
+  --text-sm:   0.875rem;  /* 14  captions */
+  --text-base: 1rem;      /* 16  body */
+  --text-lg:   1.25rem;   /* 20  lead */
+  --text-xl:   1.5625rem; /* 25  h4 */
+  --text-2xl:  1.953rem;  /* 31  h3 */
+  --text-3xl:  2.441rem;  /* 39  h2 */
+  --text-4xl:  3.052rem;  /* 49  h1 */
+  --text-5xl:  3.815rem;  /* 61  display */
+  --text-6xl:  5.96rem;   /* 95  hero numerals (Tanker) */
+  --leading-tight: 1.05; --leading-snug: 1.25; --leading-body: 1.55;
+  --tracking-tight: -0.02em; --tracking-label: 0.14em;
+
+  /* ---------- 5. Space (8pt), radius, line, motion ---------- */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --space-6: 32px; --space-7: 48px; --space-8: 64px; --space-9: 96px; --space-10: 128px;
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 16px; --radius-device: 40px; --radius-pill: 999px;
+  --hairline: 1px; --rule: 2px;               /* 2px = the Mars annotation line */
+  --shadow-1: 0 1px 2px rgb(14 14 12 / .06), 0 2px 8px rgb(14 14 12 / .06);
+  --shadow-2: 0 8px 32px rgb(14 14 12 / .12);
+  --ease-out: cubic-bezier(.2,.8,.2,1); --ease-inout: cubic-bezier(.65,0,.35,1);
+  --dur-fast: 140ms; --dur-base: 240ms; --dur-slow: 480ms;
+  --container: 1200px; --gutter: 24px;
+
+  /* ---------- 6. shadcn/ui bridge (HSL channels) ---------- */
+  --background: 45 17% 91%;   --foreground: 60 8% 5%;
+  --card: 48 22% 95%;         --card-foreground: 60 8% 5%;
+  --popover: 48 22% 95%;      --popover-foreground: 60 8% 5%;
+  --primary: 22 85% 52%;      --primary-foreground: 60 8% 5%;
+  --secondary: 201 20% 23%;   --secondary-foreground: 45 17% 91%;
+  --muted: 44 16% 86%;        --muted-foreground: 231 9% 28%;
+  --accent-hsl: 45 75% 83%;   --accent-foreground: 60 8% 5%;
+  --destructive: 7 44% 45%;   --destructive-foreground: 45 17% 91%;
+  --border-hsl: 229 14% 77%;  --input: 229 14% 77%; --ring: 22 85% 52%;
+  --radius: 0.5rem;
+}
+
+/* ---------- 7. Dark mode (Ink) ---------- */
+[data-theme="dark"], .mtrx-dark {
+  --bg: var(--mtrx-ink);
+  --surface: var(--mtrx-phantom);
+  --surface-sunk: #070706;
+  --text: var(--mtrx-canvas);          /* 16.1:1 */
+  --text-muted: var(--mtrx-steel);     /* 10.6:1 */
+  --text-subtle: var(--mtrx-space);    /* 7.6:1 */
+  --border: var(--mtrx-arsenic);
+  --border-strong: var(--mtrx-canvas);
+  --background: 60 8% 5%; --foreground: 45 17% 91%;
+  --card: 240 9% 13%; --card-foreground: 45 17% 91%;
+  --popover: 240 9% 13%; --popover-foreground: 45 17% 91%;
+  --muted: 240 9% 13%; --muted-foreground: 229 14% 77%;
+  --border-hsl: 231 9% 28%; --input: 231 9% 28%;
+}
+[data-theme="gunmetal"], .mtrx-gunmetal {   /* the BENEATH surface */
+  --bg: var(--mtrx-gunmetal); --surface: #26333A; --text: var(--mtrx-canvas);
+  --text-muted: var(--mtrx-steel); --text-subtle: var(--mtrx-steel); --border: #46555D;
+}
+
+/* ---------- 8. Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans);
+  font-size: var(--text-base); line-height: var(--leading-body); -webkit-font-smoothing: antialiased; }
+h1,h2,h3,h4 { font-family: var(--font-sans); font-weight: 700; letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight); margin: 0 0 var(--space-4); text-wrap: balance; }
+h1 { font-size: var(--text-4xl); } h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); } h4 { font-size: var(--text-xl); line-height: var(--leading-snug); }
+p { margin: 0 0 var(--space-4); max-width: 68ch; text-wrap: pretty; }
+a { color: inherit; text-decoration: underline; text-decoration-color: var(--accent);
+  text-decoration-thickness: 2px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 3px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: var(--radius-sm); }
+::selection { background: var(--mtrx-mars); color: var(--mtrx-ink); }
+hr { border: 0; border-top: var(--hairline) solid var(--border); margin: var(--space-7) 0; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important;
+  transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+
+/* ---------- 9. Brand furniture ---------- */
+.mtrx-display { font-family: var(--font-display); font-weight: 400; line-height: .9; letter-spacing: 0; }
+.mtrx-numeral { font-family: var(--font-display); color: var(--accent); line-height: .9; }
+.mtrx-label { font-family: var(--font-sans); font-weight: 700; font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-muted); }
+.mtrx-meta { display: flex; justify-content: space-between; gap: var(--space-4); }
+.mtrx-annot { display: inline-flex; align-items: center; gap: var(--space-2); }
+.mtrx-annot::before { content: ""; width: 48px; height: var(--rule); background: var(--mtrx-mars); }
+.mtrx-annot::after  { content: ""; width: 10px; height: 10px; border: var(--rule) solid var(--mtrx-mars);
+  border-radius: 50%; order: -1; margin-right: -10px; }
+.mtrx-motif { background-image:
+  linear-gradient(var(--mtrx-mars), var(--mtrx-mars)), linear-gradient(var(--mtrx-mars), var(--mtrx-mars));
+  background-size: 100% 1px, 1px 100%; background-position: 0 50%, 50% 0; background-repeat: no-repeat; }
+.mtrx-credit { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-5) 0;
+  border-top: var(--hairline) solid var(--border); font-size: var(--text-xs); font-weight: 700;
+  letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--text-subtle); }
+
+/* ---------- 10. Components ---------- */
+.mtrx-container { max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); }
+.mtrx-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 44px; padding: 0 var(--space-5); border: var(--rule) solid transparent; border-radius: var(--radius-pill);
+  font: 700 var(--text-sm)/1 var(--font-sans); letter-spacing: .02em; cursor: pointer; text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-base) var(--ease-out),
+  color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out); }
+.mtrx-btn:active { transform: translateY(1px); }
+.mtrx-btn--primary { background: var(--accent); color: var(--on-accent); }
+.mtrx-btn--primary:hover { background: var(--text); color: var(--bg); }
+.mtrx-btn--secondary { background: transparent; color: var(--text); border-color: var(--border-strong); }
+.mtrx-btn--secondary:hover { background: var(--text); color: var(--bg); }
+.mtrx-btn--ghost { background: transparent; color: var(--text); }
+.mtrx-btn--ghost:hover { background: var(--surface-sunk); }
+.mtrx-btn[disabled] { opacity: .45; cursor: not-allowed; }
+.mtrx-card { background: var(--surface); border: var(--hairline) solid var(--border); border-radius: var(--radius-lg);
+  padding: var(--space-6); }
+.mtrx-card--interactive { transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }
+.mtrx-card--interactive:hover { border-color: var(--accent); transform: translateY(-2px); }
+.mtrx-input { width: 100%; min-height: 44px; padding: 0 var(--space-4); background: var(--surface);
+  border: var(--hairline) solid var(--border); border-radius: var(--radius-md); color: var(--text);
+  font: 400 var(--text-base) var(--font-sans); }
+.mtrx-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgb(237 105 29 / .25); }
+.mtrx-tag { display: inline-flex; align-items: center; height: 26px; padding: 0 var(--space-3); border-radius: var(--radius-pill);
+  font: 700 var(--text-xs)/1 var(--font-sans); letter-spacing: .08em; text-transform: uppercase;
+  background: var(--surface-sunk); color: var(--text); }
+.mtrx-tag--mars { background: var(--mtrx-mars); color: var(--mtrx-ink); }
+.mtrx-tag--moss { background: var(--mtrx-moss); color: var(--mtrx-jane); }
+.mtrx-tag--jane { background: var(--mtrx-jane); color: var(--mtrx-ink); }
+.mtrx-segmented { display: inline-flex; padding: 4px; gap: 4px; background: var(--surface-sunk); border-radius: var(--radius-pill); }
+.mtrx-segmented > button { border: 0; background: transparent; color: var(--text-muted); padding: 8px 16px;
+  border-radius: var(--radius-pill); font: 700 var(--text-sm) var(--font-sans); cursor: pointer; }
+.mtrx-segmented > button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.mtrx-dialog { background: var(--surface); color: var(--text); border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-lg); padding: var(--space-7); max-width: 560px; box-shadow: var(--shadow-2); }
+.mtrx-toast { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-3) var(--space-5);
+  background: var(--mtrx-ink); color: var(--mtrx-canvas); border-radius: var(--radius-pill); font-weight: 700; }
+.mtrx-toast::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--mtrx-mars); }
