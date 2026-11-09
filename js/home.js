@@ -75,6 +75,11 @@ if (ck && !ck.over && ck.hist?.length) {
   const who = ck.mode === '2p' ? 'Two players' : `${LV[ck.level] || 'Checkers'}${ck.play === 'challenge' ? ' · Challenge' : ''}`;
   cards.push(`<a class="cc" href="checkers.html"><svg class="ico" viewBox="0 0 44 44"><rect width="44" height="44" fill="#E9CF9F"/><rect width="22" height="22" x="22" fill="#7B4F2E"/><rect width="22" height="22" y="22" fill="#7B4F2E"/><circle cx="11" cy="33" r="7" fill="#151515"/><circle cx="33" cy="11" r="7" fill="#F5F2EB"/></svg><span><b>Checkers</b><small>${who} · ${Math.ceil(ck.hist.length / 2)} moves · ${fmt((ck.clock?.ms || 0) + (ck.clock?.pen || 0))}</small></span><span class="go">→</span></a>`);
 }
+const cs = read('mtrx-cs1');
+if (cs && !cs.over && cs.moves?.length) {
+  const who = cs.mode === '2p' ? 'Two players' : `${cs.drill ? 'Drill' : LV[cs.level] || 'Chess'}${cs.play === 'challenge' ? ' · Challenge' : ''}`;
+  cards.push(`<a class="cc" href="chess.html"><svg class="ico" viewBox="0 0 44 44"><rect width="44" height="44" fill="#EEEED2"/><rect width="22" height="22" x="22" fill="#769656"/><rect width="22" height="22" y="22" fill="#769656"/><text x="22" y="31" font-size="26" text-anchor="middle" font-family="Georgia,serif" fill="#0E0E0C">\u265e\ufe0e</text></svg><span><b>Chess</b><small>${who} · ${Math.ceil(cs.moves.length / 2)} moves · ${fmt((cs.clock?.ms || 0) + (cs.clock?.pen || 0))}</small></span><span class="go">→</span></a>`);
+}
 const sd = read('mtrx-sudoku2');
 if (sd && !sd.done && sd.values) {
   const filled = sd.values.filter((v) => v != null).length;
@@ -90,6 +95,7 @@ function bestLine(keyFor, label) {
   return '';
 }
 $('#ckBest').textContent = bestLine((i, ch) => ['o', 'f'].map((j) => `mtrx-ck-best:${LID[i]}:${j}${ch ? ':c' : ''}`), 'Your best:');
+$('#csBest').textContent = bestLine((i, ch) => [`mtrx-cs-best:${LID[i]}${ch ? ':c' : ''}`], 'Your best:');
 $('#sdBest').textContent = bestLine((i, ch) => [`mtrx-sudoku-best-${CORE[i]}${ch ? '-c' : ''}`], 'Your best:');
 
 // ---------- soft reveal on scroll ----------
