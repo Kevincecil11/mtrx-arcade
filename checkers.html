@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkers · MTRX™ Arcade</title><meta name="description" content="Checkers against an AI with five real difficulty levels, plus rules, strategy and endgame drills. Designed by MTRX™.">
+<link rel="stylesheet" href="assets/mtrx-theme.css"><link rel="stylesheet" href="assets/arcade.css">
+<style>
+.board-col{display:flex;flex-direction:column;align-items:center;gap:var(--space-4)}
+.cboard{display:grid;grid-template-columns:repeat(8,1fr);width:min(100%,600px);aspect-ratio:1;border:10px solid var(--mtrx-ink);border-radius:var(--radius-md);overflow:hidden;user-select:none}
+[data-theme="dark"] .cboard{border-color:var(--mtrx-phantom)}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;border:0;padding:0}
+.sq.light{background:#E7DFCB}.sq.dark{background:#2F3E46;cursor:pointer}
+.sq.last{background:#46555D}.sq.cap::after{content:"";position:absolute;inset:30%;border:2px dashed var(--mtrx-steel-red);border-radius:50%}
+.sq.dest::after{content:"";position:absolute;width:28%;height:28%;border-radius:50%;background:var(--mtrx-mars);opacity:.9}
+.sq.hintsq{box-shadow:inset 0 0 0 4px var(--mtrx-mars)}
+.pc{width:78%;height:78%;border-radius:50%;display:flex;align-items:center;justify-content:center;font:400 clamp(14px,3.4vw,26px)/1 var(--font-display);transition:transform var(--dur-fast) var(--ease-out)}
+.pc.dk{background:var(--mtrx-mars);color:var(--mtrx-ink);box-shadow:inset 0 -5px 0 rgb(0 0 0 / .25),0 3px 0 rgb(0 0 0 / .35)}
+.pc.lt{background:var(--mtrx-canvas);color:var(--mtrx-ink);box-shadow:inset 0 -5px 0 rgb(0 0 0 / .15),0 3px 0 rgb(0 0 0 / .35)}
+.pc.mov{outline:2px solid var(--mtrx-jane);outline-offset:3px}
+.pc.selp{transform:scale(1.08);outline:3px solid var(--mtrx-jane);outline-offset:3px}
+.coords{display:flex;justify-content:space-between;width:min(100%,600px);font-weight:700;font-size:var(--text-xs);color:var(--text-subtle);letter-spacing:.1em}
+.caps{display:flex;gap:var(--space-5)}.caps .dotp{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.moves{max-height:180px;overflow:auto;font-size:var(--text-sm);color:var(--text-muted);border-top:1px solid var(--border);padding-top:var(--space-3);columns:2}
+.side .mtrx-segmented button{flex:1}
+</style></head><body>
+<div class="topbar"><a href="index.html" id="home"></a><span class="crumb">Arcade / Checkers</span><span class="spacer"></span>
+<button class="mtrx-btn mtrx-btn--secondary sm" id="learnBtn">How to play &amp; strategy</button>
+<div class="mtrx-segmented" id="themeSeg"><button aria-pressed="true" data-t="">Light</button><button aria-pressed="false" data-t="dark">Dark</button></div></div>
+<main><div class="game-wrap">
+<div class="board-col"><div class="cboard" id="board" aria-label="Checkers board"></div><div class="coords"><span id="youLabel">You: Mars, moving up</span><span>English draughts rules</span></div></div>
+<div class="panel"><div><div class="mtrx-label">MTRX™ Arcade</div><h1>Checkers</h1></div>
+<div><div class="mtrx-label">Difficulty</div><div class="mtrx-segmented diff" id="diffSeg"></div></div>
+<div class="side"><div class="mtrx-label">You play</div><div class="mtrx-segmented" id="sideSeg" style="display:flex"><button aria-pressed="true" data-s="dark">Mars (first)</button><button aria-pressed="false" data-s="light">Canvas (second)</button></div></div>
+<div class="status" id="status">Loading the engine…</div>
+<div class="caps"><div><span class="dotp" style="background:var(--mtrx-mars)"></span><b id="capD">12</b> Mars</div><div><span class="dotp" style="background:var(--mtrx-canvas);border:1px solid var(--border)"></span><b id="capL">12</b> Canvas</div></div>
+<div class="btn-row"><button class="mtrx-btn mtrx-btn--primary sm" id="newBtn">New game</button><button class="mtrx-btn mtrx-btn--secondary sm" id="undoBtn">Undo</button><button class="mtrx-btn mtrx-btn--secondary sm" id="hintBtn">Best move?</button></div>
+<div><div class="mtrx-label">Moves</div><ol class="moves" id="moves"></ol></div>
+</div></div></main>
+<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Engine: rapid-draughts (MIT)</span><span>mtrxdigital.com</span></footer></div>
+<script type="module" src="js/checkers.js"></script></body></html>
