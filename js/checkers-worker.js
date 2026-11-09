@@ -1,37 +1,26 @@
-// Checkers AI worker. Engine: rapid-draughts (MIT, loks0n). Level policy: Designed by MTRX™
-const SOURCES = ['https://cdn.jsdelivr.net/npm/rapid-draughts@1.0.6/dist/english.js', 'https://esm.sh/rapid-draughts@1.0.6/english', 'https://cdn.jsdelivr.net/npm/rapid-draughts@1.0.6/dist/english.js/+esm'];
-let L;
-async function load() {
-  if (L) return L;
-  let last;
-  for (const u of SOURCES) { try { L = await import(u); return L; } catch (e) { last = e; } }
-  throw last;
-}
+// Checkers AI worker. Engine and level policy: Designed by MTRX™
+import { search, genMoves } from './checkers-engine.js';
 const rnd = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
-// Each level: chance of a random legal move, search depth, opening ballot
+// blunder: chance of a random legal move · depth: plies searched · noise: picks randomly among moves this close to the best
 const LEVELS = {
-  easy: { blunder: 0.6, depth: 2 },
-  medium: { blunder: 0.2, depth: 3 },
-  intermediate: { blunder: 0.06, depth: 5 },
-  hard: { blunder: 0, depth: 7, ballot: 1 },
-  expert: { blunder: 0, depth: 9, ballot: 1 },
-  hint: { blunder: 0, depth: 7 },
+  easy: { blunder: 0.5, depth: 2, noise: 40, time: 800 },
+  medium: { blunder: 0.18, depth: 3, noise: 20, time: 800 },
+  intermediate: { blunder: 0.05, depth: 5, noise: 8, time: 1200 },
+  hard: { blunder: 0, depth: 7, noise: 3, time: 1500, opening: 15 },
+  expert: { blunder: 0, depth: 14, noise: 0, time: 1500, opening: 8 },
+  hint: { blunder: 0, depth: 9, noise: 0, time: 1200 },
 };
-self.onmessage = async ({ data }) => {
+self.onmessage = ({ data }) => {
   try {
-    const { EnglishDraughts, EnglishDraughtsComputerFactory } = await load();
-    const game = EnglishDraughts.setup(data.engine);
     const cfg = LEVELS[data.level] || LEVELS.medium;
-    const moves = game.moves;
-    let move, how;
-    if (moves.length === 1) { move = moves[0]; how = 'forced'; }
-    else if ((cfg.ballot && data.aiMoveCount < cfg.ballot) || rnd() < cfg.blunder) {
-      move = moves[Math.floor(rnd() * moves.length)]; how = cfg.ballot ? 'ballot' : 'random';
-    } else {
-      const ai = EnglishDraughtsComputerFactory.alphaBeta({ maxDepth: cfg.depth, quiescence: true });
-      move = await ai(game); how = 'search';
+    const moves = genMoves(data.state, data.forced);
+    let move;
+    if (moves.length && rnd() < cfg.blunder) move = moves[Math.floor(rnd() * moves.length)];
+    else {
+      const noise = cfg.opening && data.aiCount < 2 ? cfg.opening : cfg.noise;
+      move = search(data.state, { depth: cfg.depth, forced: data.forced, timeMs: cfg.time, noise, rand: rnd }).move;
     }
-    self.postMessage({ ok: true, move, how, id: data.id });
+    self.postMessage({ ok: true, move, id: data.id });
   } catch (e) {
     self.postMessage({ ok: false, error: String(e), id: data.id });
   }
