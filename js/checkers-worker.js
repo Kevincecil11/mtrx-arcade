@@ -1,5 +1,5 @@
 // Checkers AI worker. Engine and level policy: Designed by MTRX™
-import { search, genMoves } from './checkers-engine.js?v=4';
+import { search, genMoves } from './checkers-engine.js?v=5';
 const rnd = () => crypto.getRandomValues(new Uint32Array(1))[0] / 2 ** 32;
 // blunder: chance of a random legal move · depth: plies searched · noise: picks randomly among moves this close to the best
 const LEVELS = {

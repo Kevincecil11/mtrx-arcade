@@ -1,8 +1,8 @@
-// MTRX™ Arcade · Checkers v3. Rules + AI: MTRX checkers engine. UI, levels and lessons: Designed by MTRX™
-import { WORDMARK } from './wordmark.js?v=4';
-import { mountLearn } from './learn.js?v=4';
-import { applyTheme } from './theme.js?v=4';
-import { BLACK, WHITE, initialBoard, newState, genMoves, applyMove, sameMove, status } from './checkers-engine.js?v=4';
+// MTRX™ Arcade · Checkers v4. Rules + AI: MTRX checkers engine. UI, levels and lessons: Designed by MTRX™
+import { WORDMARK } from './wordmark.js?v=5';
+import { mountLearn } from './learn.js?v=5';
+import { applyTheme } from './theme.js?v=5';
+import { BLACK, WHITE, initialBoard, newState, genMoves, applyMove, sameMove, status } from './checkers-engine.js?v=5';
 
 const $ = (s) => document.querySelector(s);
 $('#home').innerHTML = WORDMARK;
@@ -24,52 +24,93 @@ const STYLES = [
 const CROWN_D = 'M2.5 8.2l4.8 3.9L12 4.2l4.7 7.9 4.8-3.9-1.9 9.3H4.4z M4.6 18.9h14.8v2.4H4.6z';
 const CROWN = `<svg class="crown" viewBox="0 0 24 24" aria-hidden="true"><path d="${CROWN_D}"/></svg>`;
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-// motion timings, tuned to feel unhurried: a step glides, a jump arcs over the piece it takes
-const SLIDE = REDUCED ? 0 : 460, HOP = REDUCED ? 0 : 580, BEAT = REDUCED ? 0 : 90, AI_MIN = 750;
+// motion timings, tuned slow and soft: a step glides, a jump arcs over the piece it takes,
+// the taken piece melts away and leaves a fading ring. Speed is a menu setting (Relaxed by default).
+const SPEEDS = { relaxed: 1, normal: .72, quick: .48 };
+const T = { slide: 780, hop: 1000, beat: 320, fade: 680, prelift: 420, crown: 760, settle: 240, ai: 1000, replay: 1400 };
+const ms = (k) => (REDUCED ? 0 : Math.round(T[k] * (SPEEDS[P.speed] || 1)));
+const EASE_MOVE = 'cubic-bezier(.45,.05,.3,1)', EASE_ARC = 'cubic-bezier(.4,0,.5,1)';
+const LIFTED = 'translateY(-5%) scale(1.07)', REST = 'translateY(0) scale(1)';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const rc = (sq) => [sq >> 3, sq & 7];
 const to = (m) => m.path[m.path.length - 1];
 const fmt = (ms) => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
 // ---------- preferences (apply to the next game; board style and theme apply at once) ----------
-const P = Object.assign({ level: 1, side: BLACK, forced: false, style: 'walnut', showMoves: true },
+const P = Object.assign({ level: 1, side: BLACK, forced: false, style: 'walnut', showMoves: true, opp: 'ai', play: 'practice', speed: 'relaxed' },
   JSON.parse(localStorage.getItem('mtrx-ck-prefs') || 'null') || {
     level: +(localStorage.getItem('mtrx-ck-level') ?? 1), side: +(localStorage.getItem('mtrx-ck-side') || BLACK), forced: localStorage.getItem('mtrx-ck-forced') === '1',
     style: localStorage.getItem('mtrx-ck-style') || 'walnut' });
 if (!STYLES.some((s) => s.id === P.style)) P.style = 'walnut';
 P.level = Math.min(4, Math.max(0, +P.level || 0)); P.side = P.side === WHITE ? WHITE : BLACK;
+if (P.opp !== '2p') P.opp = 'ai'; if (P.play !== 'challenge') P.play = 'practice'; if (!SPEEDS[P.speed]) P.speed = 'relaxed';
 const savePrefs = () => localStorage.setItem('mtrx-ck-prefs', JSON.stringify(P));
 document.body.dataset.board = P.style;
 
 // ---------- game state ----------
-let G = null; // { S, human, level, forced, hist, aiCount, over, result, start, drill: {i, solved} | null, clock: {ms, since} }
+let G = null; // { S, human, level, forced, mode: 'ai'|'2p', play: 'practice'|'challenge', undos, hist, aiCount, over, result, start, drill, clock: {ms, since, pen} }
 let ids = [], nextId = 1, selected = null, hint = null, thinking = false, animating = false, reqId = 0;
+let paused = false, autoPaused = false, resumeWaiters = [];
 let review = null, reviewTok = 0, autoplay = null;
-const busy = () => thinking || animating;
+const busy = () => thinking || animating || paused;
+const twoP = () => G?.mode === '2p';
+const challenge = () => G?.play === 'challenge' && !twoP() && !G?.drill;
+const humanTurn = () => twoP() || G.S.player === G.human;
+const sideName = (p) => (p === BLACK ? 'Black' : 'White');
 const S = () => G.S;
 const legal = () => genMoves(G.S, G.forced);
 const flip = () => G && G.human === WHITE;
 const disp = (sq) => (flip() ? 63 - sq : sq);
 const drillDef = () => (G?.drill ? DRILLS[G.drill.i] : null);
-const worker = new Worker(new URL('./checkers-worker.js?v=4', import.meta.url), { type: 'module' });
+const worker = new Worker(new URL('./checkers-worker.js?v=5', import.meta.url), { type: 'module' });
 
 // ---------- clock ----------
-const elapsed = () => (G ? G.clock.ms + (G.clock.since ? Date.now() - G.clock.since : 0) : 0);
-const startClock = () => { if (G && !G.clock.since && !G.over) G.clock.since = Date.now(); };
+const elapsed = () => (G ? G.clock.ms + (G.clock.pen || 0) + (G.clock.since ? Date.now() - G.clock.since : 0) : 0);
+const startClock = () => { if (G && !G.clock.since && !G.over && !paused) G.clock.since = Date.now(); };
 const stopClock = () => { if (G?.clock.since) { G.clock.ms += Date.now() - G.clock.since; G.clock.since = null; } };
-const bestKey = () => (G.drill ? `mtrx-ck-best:drill${G.drill.i}` : `mtrx-ck-best:${LEVELS[G.level].id}:${G.forced ? 'f' : 'o'}`);
-const bestFor = (k) => +(localStorage.getItem(k) || 0);
+const bestKey = () => (twoP() ? null : G.drill ? `mtrx-ck-best:drill${G.drill.i}` : `mtrx-ck-best:${LEVELS[G.level].id}:${G.forced ? 'f' : 'o'}${challenge() ? ':c' : ''}`);
+const bestFor = (k) => (k ? +(localStorage.getItem(k) || 0) : 0);
 let clockShown = '';
 function tickClock() {
   if (!G) return;
   const t = fmt(elapsed()); if (t !== clockShown) { $('#clock').textContent = t; clockShown = t; }
 }
+function penaltyFlash(text) {
+  const pen = $('#pen'), btn = $('#clockBtn');
+  tickClock(); pen.textContent = text; pen.classList.remove('go'); btn.classList.remove('hit'); void pen.offsetWidth; pen.classList.add('go'); btn.classList.add('hit');
+}
 setInterval(tickClock, 250);
-document.addEventListener('visibilitychange', () => {
-  if (!G) return;
-  if (document.hidden) { if (G.clock.since) { stopClock(); G.clock.paused = true; save(); } }
-  else if (G.clock.paused) { G.clock.paused = false; startClock(); }
-});
+// leaving the tab pauses for real: you come back to a Paused card, not a clock that ran without you
+document.addEventListener('visibilitychange', () => { if (document.hidden && running()) { autoPaused = false; pause('away'); } });
+addEventListener('pagehide', () => save());
+
+// ---------- pause ----------
+const running = () => G && !G.over && !paused && review == null && overlay.hidden;
+const untilRunning = () => (paused ? new Promise((r) => resumeWaiters.push(r)) : Promise.resolve());
+function pause(why = 'button') {
+  if (!G || G.over || paused) return;
+  paused = true; stopClock(); save(); selected = null;
+  if (why !== 'menu' && why !== 'setup') showPause(why);
+  draw();
+}
+function resume() {
+  if (!paused) return;
+  paused = false; autoPaused = false;
+  if (overlay.classList.contains('pause')) hideOverlay(true);
+  if (G && (G.hist.length || G.clock.ms)) startClock();
+  const w = resumeWaiters; resumeWaiters = []; w.forEach((f) => f());
+  draw();
+  if (G && !G.over && !busy()) afterMove(true);
+}
+function togglePause() { if (paused) resume(); else if (running()) pause('button'); }
+function showPause(why) {
+  overlay.hidden = false; overlay.className = 'overlay pause';
+  const title = why === 'back' ? 'Welcome back' : 'Paused';
+  overlay.innerHTML = `<div class="ov-card" role="dialog" aria-label="${title}"><div class="mtrx-label" style="margin:0">${twoP() ? 'Two players' : G.drill ? drillDef().name : LEVELS[G.level].name}${challenge() ? ' · Challenge' : ''}</div><h2>${title}</h2>
+    <div class="big">${fmt(elapsed())}</div><p class="note">The clock is stopped and the board is hidden.</p>
+    <button class="mtrx-btn mtrx-btn--primary go" id="resumeBtn">Resume</button><p class="hint-line">Tip: tap the clock or press P to pause any time</p></div>`;
+  overlay.querySelector('#resumeBtn').onclick = resume;
+}
 
 // ---------- board DOM ----------
 const pcLayer = $('#pieces'), arrowSvg = $('#arrows'), overlay = $('#overlay');
@@ -147,17 +188,19 @@ function describe(m, board) {
   if (m.crown) s += ', crowned';
   return s;
 }
-const who = (by) => (by === 'you' ? 'You' : G?.drill ? 'Drill AI' : 'AI');
+const who = (by) => (by === 'you' ? 'You' : by === 'b' ? 'Black' : by === 'w' ? 'White' : G?.drill ? 'Drill AI' : 'AI');
+const akind = (by) => (by === 'ai' || by === 'w' ? 'w' : 'm');
 const aiName = () => (G?.drill ? 'The drill AI' : LEVELS[G.level].name);
 
 // ---------- drawing ----------
-function setStatus(t, cls = '') { const el = $('#status'); el.textContent = t; el.className = 'status-line ' + cls; }
+let statusShown = '', statusCls = '';
+function setStatus(t, cls = '') { const el = $('#status'); if (t === statusShown && cls === statusCls) return; statusShown = t; statusCls = cls; el.textContent = t; el.className = 'status-line ' + cls; if (t) { void el.offsetWidth; el.classList.add('fade'); } }
 const clearMarks = () => sqEls.forEach((el) => el.classList.remove('dest', 'destcap', 'sel', 'last', 'hintsq'));
 function draw() {
   if (!G) return;
   if (review == null) {
     syncPieces(G.S.board, ids);
-    const myTurn = !busy() && !G.over && G.S.player === G.human;
+    const myTurn = !busy() && !G.over && humanTurn();
     const moves = myTurn ? legal() : [];
     const dests = selected != null ? moves.filter((m) => m.from === selected) : [];
     clearMarks();
@@ -177,8 +220,14 @@ function draw() {
     arrowSvg.innerHTML = '';
   }
   drawHud();
-  $('#undoBtn').disabled = animating || !G.hist.some((h) => h.by === 'you') || review != null;
-  $('#hintBtn').disabled = busy() || G.over || G.S.player !== G.human || review != null;
+  $('#undoBtn').disabled = animating || paused || !G.hist.some((h) => h.by !== 'ai') || review != null;
+  $('#hintBtn').disabled = busy() || G.over || !humanTurn() || review != null;
+  const ch = challenge();
+  $('#hintBtn').hidden = ch; $('.actions').classList.toggle('one', ch);
+  $('#undoBtn').innerHTML = ch ? 'Undo<small>+1:00</small>' : 'Undo';
+  const cb = $('#clockBtn'); cb.disabled = G.over || review != null || (!overlay.hidden && !paused);
+  cb.classList.toggle('paused', paused); cb.setAttribute('aria-label', paused ? 'Resume' : 'Pause');
+  $('#pz').innerHTML = paused ? '<path d="M7 4.5v15l12-7.5z"/>' : '<path d="M6.5 4.5h3.6v15H6.5zM13.9 4.5h3.6v15h-3.6z"/>';
 }
 function drawHud() {
   const b = G.S.board, humanSide = G.human, start = G.start;
@@ -187,16 +236,17 @@ function drawHud() {
   $('#tookYou').textContent = aiStart - theirs; $('#tookAi').textContent = youStart - mine;
   $('#youChip').className = 'chip ' + (humanSide === BLACK ? 'b' : 'w');
   $('#aiChip').className = 'chip ' + (humanSide === BLACK ? 'w' : 'b');
-  $('#aiName').textContent = G.drill ? 'Drill AI' : LEVELS[G.level].name;
+  $('#aiName').textContent = twoP() ? 'White' : G.drill ? 'Drill AI' : LEVELS[G.level].name;
+  $('#youName').textContent = twoP() ? 'Black' : 'You';
   const turnYou = !G.over && G.S.player === humanSide;
   $('#hudYou').classList.toggle('turn', turnYou); $('#hudAi').classList.toggle('turn', !G.over && !turnYou);
   const best = bestFor(bestKey());
-  $('#clockSub').textContent = best ? `Best ${fmt(best)}` : 'No best yet';
+  $('#clockSub').textContent = paused ? 'Paused' : twoP() ? 'Two players' : `${challenge() ? 'Challenge · ' : ''}${best ? `Best ${fmt(best)}` : 'No best yet'}`;
 }
 
 // ---------- input ----------
 function clickSq(sq) {
-  if (!G || busy() || G.over || review != null || G.S.player !== G.human) return;
+  if (!G || busy() || G.over || review != null || !humanTurn()) return;
   const moves = legal();
   if (selected != null) {
     const mine = moves.filter((m) => m.from === selected);
@@ -207,7 +257,7 @@ function clickSq(sq) {
     if (m) return humanMove(m);
   }
   if (moves.some((m) => m.from === sq)) { selected = sq === selected ? null : sq; draw(); return; }
-  if (G.S.board[sq] && Math.sign(G.S.board[sq]) === G.human) {
+  if (G.S.board[sq] && Math.sign(G.S.board[sq]) === G.S.player) {
     shake(sq);
     setStatus(G.forced && moves[0]?.caps.length ? 'Forced jumps are on: take a piece with a glowing checker' : 'That checker is blocked right now');
   } else if (selected != null) { selected = null; draw(); }
@@ -221,13 +271,18 @@ function humanMove(m) {
     if (m.from !== fr * 8 + fc || to(m) !== tr2 * 8 + tc) { shake(m.from); selected = null; draw(); setStatus(`Not that one. ${d.clue}`, 'lose'); return; }
     G.drill.solved = true; $('#drillTxt').textContent = `Solved · ${d.explain}`;
   }
-  doMove(m, 'you');
+  doMove(m, twoP() ? (G.S.player === BLACK ? 'b' : 'w') : 'you');
 }
 
 async function doMove(m, by) {
+  const lifted = selected === m.from;
   animating = true; selected = null; hint = null; startClock();
   draw();
-  await animateMove(m, ids);
+  if (by === 'ai' && !REDUCED) { // the AI's piece rises first, so your eye finds it before it moves
+    const el = pieceEls.get(ids[m.from]); el?.classList.add('picked'); sqEls[disp(m.from)].classList.add('sel');
+    await wait(ms('prelift')); sqEls[disp(m.from)].classList.remove('sel');
+  }
+  await animateMove(m, ids, lifted || by === 'ai');
   const before = G.S;
   G.S = applyMove(G.S, m);
   const id = ids[m.from]; ids = ids.slice(); ids[m.from] = 0; for (const c of m.caps) ids[c] = 0; ids[to(m)] = id;
@@ -235,55 +290,82 @@ async function doMove(m, by) {
   if (by === 'ai') G.aiCount++;
   animating = false; save(); draw(); afterMove();
 }
-// A step glides one square. A jump arcs up and over, and the taken piece fades as the jumper passes it.
-async function animateMove(m, idArr) {
+// A step glides one square. A jump arcs up and over; as the jumper passes the top of its arc the taken
+// piece sinks and melts away, leaving a soft ring on its square for a moment. Hops in a chain pause between.
+function ghostAt(sq) {
+  if (REDUCED) return;
+  const g = document.createElement('div'); g.className = 'ghost'; g.style.transform = tr(sq); g.innerHTML = '<i></i>';
+  pcLayer.prepend(g); setTimeout(() => g.remove(), 2400);
+}
+async function animateMove(m, idArr, lifted = false) {
   const el = pieceEls.get(idArr[m.from]); if (!el) return;
   const lift = el.querySelector('.lift');
   arrowSvg.innerHTML = ''; clearMarks();
   el.classList.remove('can', 'picked'); el.classList.add('moving');
-  let prev = m.from;
+  let prev = m.from, pose = lifted ? LIFTED : REST;
   for (let i = 0; i < m.path.length; i++) {
-    const next = m.path[i], jump = m.caps[i] != null, dur = jump ? HOP : SLIDE;
+    const next = m.path[i], jump = m.caps[i] != null, dur = ms(jump ? 'hop' : 'slide');
     if (dur) {
-      const a = el.animate([{ transform: tr(prev) }, { transform: tr(next) }], { duration: dur, easing: 'cubic-bezier(.42,0,.32,1)', fill: 'forwards' });
+      const a = el.animate([{ transform: tr(prev) }, { transform: tr(next) }], { duration: dur, easing: EASE_MOVE, fill: 'forwards' });
       lift.animate(jump
-        ? [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-20%) scale(1.18)', offset: .5 }, { transform: 'translateY(0) scale(1)' }]
-        : [{ transform: 'scale(1)' }, { transform: 'translateY(-4%) scale(1.05)', offset: .5 }, { transform: 'scale(1)' }],
-      { duration: dur, easing: 'ease-in-out' });
+        ? [{ transform: pose }, { transform: 'translateY(-26%) scale(1.16)', offset: .5 }, { transform: 'translateY(-3%) scale(1.02)', offset: .86 }, { transform: REST }]
+        : [{ transform: pose }, { transform: 'translateY(-7%) scale(1.06)', offset: .45 }, { transform: REST }],
+      { duration: dur, easing: EASE_ARC });
+      pose = REST;
       if (jump) {
-        const cap = pieceEls.get(idArr[m.caps[i]]), base = tr(m.caps[i]);
-        setTimeout(() => cap?.animate([{ opacity: 1, transform: base }, { opacity: 0, transform: `${base} scale(.82)` }], { duration: 340, easing: 'ease-out', fill: 'forwards' }), dur * .38);
+        const cap = pieceEls.get(idArr[m.caps[i]]), base = tr(m.caps[i]), csq = m.caps[i];
+        setTimeout(() => {
+          ghostAt(csq);
+          cap?.animate([{ opacity: 1, transform: base }, { opacity: .55, transform: `${base} scale(.92)`, offset: .4 }, { opacity: 0, transform: `${base} scale(.78)` }], { duration: ms('fade'), easing: 'ease-out', fill: 'forwards' });
+        }, dur * .42);
       }
       try { await a.finished; } catch { /* interrupted */ }
       el.style.transform = tr(next); a.cancel();
+      sqEls[disp(prev)].classList.add('trail');
     } else el.style.transform = tr(next);
     if (jump) pieceEls.get(idArr[m.caps[i]])?.style.setProperty('opacity', '0');
     prev = next;
-    if (i < m.path.length - 1) await wait(BEAT);
+    if (i < m.path.length - 1) await wait(ms('beat'));
   }
+  if (ms('settle')) lift.animate([{ transform: REST }, { transform: 'translateY(1.5%) scale(.97)' }, { transform: REST }], { duration: ms('settle'), easing: 'ease-out' });
   el.classList.remove('moving');
-  if (m.crown) { el.classList.add('king', 'crowning'); await wait(REDUCED ? 0 : 520); el.classList.remove('crowning'); }
+  if (m.crown) { await wait(ms('settle')); el.classList.add('king', 'crowning'); await wait(ms('crown')); el.classList.remove('crowning'); }
+  else await wait(ms('settle') * .6);
+  sqEls.forEach((s) => s.classList.remove('trail'));
 }
 
-function afterMove() {
+function afterMove(fromResume) {
   const st = status(G.S, G.forced);
   if (st !== 'playing') return finish(st);
-  if (G.S.player !== G.human) return aiTurn();
+  if (paused) return draw();
+  if (!twoP() && G.S.player !== G.human) { if (!thinking) aiTurn(); return; }
   const caps = legal().some((m) => m.caps.length);
   const d = drillDef();
-  setStatus(caps ? (G.forced ? 'Your move · you must jump' : 'Your move · a jump is available') : d && !G.hist.length ? d.goal : 'Your move');
+  const last = G.hist[G.hist.length - 1];
+  const you = twoP() ? `${sideName(G.S.player)} to move` : 'Your move';
+  const jumpTxt = caps ? (G.forced ? ' · must jump' : ' · a jump is available') : '';
+  // say what the AI just did, in words, so a fast exchange never feels like a mystery
+  const said = !twoP() && last?.by === 'ai' ? aiSaid(last.move) : twoP() && last?.move.caps.length ? `${who(last.by)} took ${last.move.caps.length === 1 ? 'a piece' : `${last.move.caps.length} pieces`}. ` : '';
+  setStatus(d && !G.hist.length ? d.goal : `${said}${you}${jumpTxt}`);
   draw();
 }
 function finish(st) {
   G.over = true; thinking = false; stopClock();
-  const won = st !== 'draw' && (st === 'black') === (G.human === BLACK);
+  const won = !twoP() && st !== 'draw' && (st === 'black') === (G.human === BLACK);
   const time = elapsed();
   let newBest = false;
-  if (won) { const k = bestKey(), b = bestFor(k); if (!b || time < b) { localStorage.setItem(k, time); newBest = true; } }
+  if (won) { const k = bestKey(), b = bestFor(k); if (k && (!b || time < b)) { localStorage.setItem(k, time); newBest = true; } }
   G.result = { st, won, time, newBest };
-  setStatus(st === 'draw' ? 'Draw' : won ? 'You win' : `${aiName()} wins`, st === 'draw' ? '' : won ? 'win' : 'lose');
+  setStatus(resultTitle(), st === 'draw' ? '' : won || twoP() ? 'win' : 'lose');
   save(); draw(); showResult();
 }
+
+function aiSaid(m) {
+  const n = m.caps.length, name = G.drill ? 'The drill AI' : LEVELS[G.level].name;
+  if (!n && !m.crown) return '';
+  return `${name} ${n === 1 ? 'took one of your pieces' : n ? `took ${n} of your pieces in one turn` : 'got a king'}${n && m.crown ? ' and got a king' : ''}. `;
+}
+const resultTitle = () => { const st = G.result.st; return st === 'draw' ? 'Draw' : twoP() ? `${st === 'black' ? 'Black' : 'White'} wins` : G.result.won ? 'You win' : `${aiName()} wins`; };
 
 // ---------- AI ----------
 function aiTurn() {
@@ -291,7 +373,8 @@ function aiTurn() {
   const id = ++reqId, t0 = performance.now();
   worker.onmessage = async ({ data }) => {
     if (data.id !== id) return;
-    const ms = performance.now() - t0; if (ms < AI_MIN) await wait(AI_MIN - ms);
+    const took = performance.now() - t0; if (took < ms('ai')) await wait(ms('ai') - took);
+    await untilRunning();
     if (id !== reqId || !G) return;
     thinking = false;
     if (!data.ok || !data.move) { setStatus('The AI hit a problem. Start a new game from the menu.', 'lose'); draw(); return; }
@@ -302,7 +385,7 @@ function aiTurn() {
   worker.postMessage({ state: G.S, level: G.drill ? 'expert' : LEVELS[G.level].id, forced: G.forced, aiCount: G.drill ? 99 : G.aiCount, id });
 }
 function askHint() {
-  if (!G || busy() || G.over || review != null || G.S.player !== G.human) return;
+  if (!G || busy() || G.over || review != null || !humanTurn() || challenge()) return;
   thinking = true; setStatus('Looking ahead for you', 'think'); draw();
   const id = ++reqId;
   worker.onmessage = ({ data }) => {
@@ -318,34 +401,46 @@ function askHint() {
 
 // ---------- undo, games, save ----------
 function undo() {
-  if (!G || animating) return;
-  let i = G.hist.length - 1; while (i >= 0 && G.hist[i].by !== 'you') i--;
+  if (!G || animating || paused) return;
+  let i = G.hist.length - 1; while (i >= 0 && G.hist[i].by === 'ai') i--; // two players: one move back; vs AI: back to your last move
   if (i < 0) return;
   reqId++; thinking = false; hideOverlay();
+  if (challenge()) { G.undos = (G.undos || 0) + 1; G.clock.pen = (G.clock.pen || 0) + 60000; penaltyFlash('+1:00'); }
   if (G.over) { G.over = false; G.result = null; startClock(); }
   G.S = G.hist[i].state; G.hist = G.hist.slice(0, i); G.aiCount = G.hist.filter((h) => h.by === 'ai').length;
   selected = null; hint = null; ids = freshIds(G.S.board);
   if (G.drill && i === 0) { G.drill.solved = false; drillBar(); }
   save(); draw(); afterMove();
 }
-function startGame({ state = newState(), level = P.level, forced = P.forced, human = P.side, drill = null } = {}) {
+function startGame({ state = newState(), level = P.level, forced = P.forced, human = P.side, drill = null, mode = drill ? 'ai' : P.opp, play = drill ? 'practice' : P.play } = {}) {
   reqId++; thinking = false; animating = false; stopAuto();
+  paused = false; autoPaused = false; resumeWaiters.forEach((f) => f()); resumeWaiters = [];
   if (review != null) exitReview(true);
-  G = { S: state, human, level, forced, hist: [], aiCount: 0, over: false, result: null, drill,
-    start: { b: state.board.filter((p) => p > 0).length, w: state.board.filter((p) => p < 0).length }, clock: { ms: 0, since: null } };
+  if (mode === '2p') human = BLACK;
+  G = { S: state, human, level, forced, mode, play, undos: 0, hist: [], aiCount: 0, over: false, result: null, drill,
+    start: { b: state.board.filter((p) => p > 0).length, w: state.board.filter((p) => p < 0).length }, clock: { ms: 0, since: null, pen: 0 } };
   ids = freshIds(G.S.board); selected = null; hint = null; clockShown = '';
-  hideOverlay(); drillBar(); save(); draw(); tickClock(); afterMove();
+  statusShown = ''; hideOverlay(); drillBar(); save(); draw(); tickClock(); afterMove();
 }
-function save() { if (G) localStorage.setItem('mtrx-ck3', JSON.stringify({ ...G, clock: { ms: elapsed(), since: null } })); }
+function save() { if (G) localStorage.setItem('mtrx-ck3', JSON.stringify({ ...G, clock: { ms: elapsed() - (G.clock.pen || 0), since: null, pen: G.clock.pen || 0 } })); }
 function drillBar() {
   const d = drillDef();
   $('#drillBar').hidden = !d;
   if (d) $('#drillTxt').textContent = `${d.name} · ${d.goal}`;
 }
-$('#drillExit').onclick = () => { G = null; localStorage.removeItem('mtrx-ck3'); $('#drillBar').hidden = true; showSetup(); };
+$('#drillExit').onclick = () => { G = null; paused = false; autoPaused = false; localStorage.removeItem('mtrx-ck3'); $('#drillBar').hidden = true; showSetup(); };
 
 // ---------- overlay: setup before a game, result after ----------
-function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
+function hideOverlay(soft) {
+  if (overlay.hidden) return;
+  if (soft && !REDUCED) { // fade out instead of vanishing
+    const o = overlay; o.classList.add('leaving');
+    setTimeout(() => { if (o.classList.contains('leaving')) { o.hidden = true; o.innerHTML = ''; o.className = 'overlay'; draw(); } }, 360);
+    return;
+  }
+  overlay.hidden = true; overlay.innerHTML = ''; overlay.className = 'overlay';
+}
+function showOverlay(html) { overlay.className = 'overlay'; overlay.hidden = false; overlay.innerHTML = html; }
 function seg(name, opts, cur) { return `<div class="mtrx-segmented" data-seg="${name}">${opts.map(([v, label]) => `<button data-v="${v}" aria-pressed="${String(v) === String(cur)}">${label}</button>`).join('')}</div>`; }
 function bindSegs(root, onPick) {
   root.querySelectorAll('[data-seg]').forEach((g) => g.querySelectorAll('button').forEach((b) => (b.onclick = () => {
@@ -353,40 +448,49 @@ function bindSegs(root, onPick) {
     onPick(g.dataset.seg, b.dataset.v);
   })));
 }
+const PLAY_NOTE = { practice: 'Best move and free undos. For learning.', challenge: 'No Best move. Every undo adds 1:00 to your time. Best times count separately.' };
 function showSetup() {
   stopAuto();
+  const live = G && !G.over;
+  if (live) pause('setup');
   if (!G) { // a fresh board behind the card
-    G = { S: newState(), human: P.side, level: P.level, forced: P.forced, hist: [], aiCount: 0, over: true, result: null, drill: null, start: { b: 12, w: 12 }, clock: { ms: 0, since: null } };
+    G = { S: newState(), human: P.side, level: P.level, forced: P.forced, mode: P.opp, play: P.play, undos: 0, hist: [], aiCount: 0, over: true, result: null, drill: null, start: { b: 12, w: 12 }, clock: { ms: 0, since: null, pen: 0 } };
     ids = freshIds(G.S.board); drillBar(); draw(); tickClock(); setStatus('');
   }
-  overlay.hidden = false;
-  overlay.innerHTML = `<div class="ov-card" role="dialog" aria-label="New game"><div class="mtrx-label" style="margin:0">MTRX™ Checkers</div><h2>New game</h2>
-    <div class="row"><div class="mtrx-label">Difficulty</div>${seg('level', LEVELS.map((l, i) => [i, l.name]), P.level)}<p class="note" id="lvNote" style="margin:8px 0 0">${LEVELS[P.level].note}</p></div>
-    <div class="row"><div class="mtrx-label">You play</div>${seg('side', [[BLACK, 'Black · moves first'], [WHITE, 'White']], P.side)}</div>
+  showOverlay(`<div class="ov-card" role="dialog" aria-label="New game"><div class="mtrx-label" style="margin:0">MTRX™ Checkers</div><h2>New game</h2>
+    <div class="row"><div class="mtrx-label">Opponent</div>${seg('opp', [['ai', 'Computer'], ['2p', 'Two players']], P.opp)}<p class="opt-note" data-only="2p">Pass and play on one screen. Black moves first.</p></div>
+    <div class="row" data-only="ai"><div class="mtrx-label">Difficulty</div>${seg('level', LEVELS.map((l, i) => [i, l.name]), P.level)}<p class="opt-note" id="lvNote">${LEVELS[P.level].note}</p></div>
+    <div class="row" data-only="ai"><div class="mtrx-label">Mode</div>${seg('play', [['practice', 'Practice'], ['challenge', 'Challenge']], P.play)}<p class="opt-note" id="plNote">${PLAY_NOTE[P.play]}</p></div>
+    <div class="row" data-only="ai"><div class="mtrx-label">You play</div>${seg('side', [[BLACK, 'Black · moves first'], [WHITE, 'White']], P.side)}</div>
     <div class="row"><div class="mtrx-label">Forced jumps</div>${seg('forced', [[0, 'Off'], [1, 'On']], P.forced ? 1 : 0)}</div>
     <button class="mtrx-btn mtrx-btn--primary go" id="goBtn">Start game</button>
-    <div class="sub"><button id="ovDrills">Try a drill</button><button id="ovLearn">How to play</button></div></div>`;
+    <div class="sub">${live ? '<button id="ovBack">Back to my game</button>' : '<button id="ovDrills">Try a drill</button>'}<button id="ovLearn">How to play</button></div></div>`);
+  const only = () => overlay.querySelectorAll('[data-only]').forEach((el) => (el.hidden = el.dataset.only !== P.opp));
+  only();
   bindSegs(overlay, (k, v) => {
+    if (k === 'opp') { P.opp = v; only(); }
     if (k === 'level') { P.level = +v; overlay.querySelector('#lvNote').textContent = LEVELS[P.level].note; }
+    if (k === 'play') { P.play = v; overlay.querySelector('#plNote').textContent = PLAY_NOTE[P.play]; }
     if (k === 'side') P.side = +v;
     if (k === 'forced') P.forced = v === '1';
     savePrefs();
   });
   overlay.querySelector('#goBtn').onclick = () => startGame();
-  overlay.querySelector('#ovDrills').onclick = () => menu.open(TAB.drills);
+  overlay.querySelector('#ovBack')?.addEventListener('click', () => { hideOverlay(true); resume(); });
+  overlay.querySelector('#ovDrills')?.addEventListener('click', () => menu.open(TAB.drills));
   overlay.querySelector('#ovLearn').onclick = () => menu.open(TAB.how);
 }
 function showResult() {
   const r = G.result; if (!r) return;
   const best = bestFor(bestKey());
-  const title = r.st === 'draw' ? 'Draw' : r.won ? 'You win' : `${aiName()} wins`;
-  overlay.hidden = false;
-  overlay.innerHTML = `<div class="ov-card" role="dialog" aria-label="${title}"><div class="mtrx-label" style="margin:0">${G.drill ? drillDef().name : LEVELS[G.level].name}${G.forced ? ' · forced jumps' : ''}</div><h2>${title}</h2>
+  const title = resultTitle();
+  const pen = challenge() && G.undos ? `<br>Includes ${G.undos} undo penalt${G.undos === 1 ? 'y' : 'ies'} (+${fmt(G.undos * 60000)})` : '';
+  showOverlay(`<div class="ov-card" role="dialog" aria-label="${title}"><div class="mtrx-label" style="margin:0">${twoP() ? 'Two players' : G.drill ? drillDef().name : LEVELS[G.level].name}${challenge() ? ' · Challenge' : ''}${G.forced ? ' · forced jumps' : ''}</div><h2>${title}</h2>
     <div class="big">${fmt(r.time)}</div>
-    <p class="note">${Math.ceil(G.hist.length / 2)} moves${r.newBest ? ' · <span class="badge">New best time</span>' : best ? ` · best ${fmt(best)}` : ''}${r.st === 'draw' ? '<br>40 moves each with only kings moving and nothing taken.' : ''}</p>
+    <p class="note">${Math.ceil(G.hist.length / 2)} moves${r.newBest ? ' · <span class="badge">New best time</span>' : best ? ` · best ${fmt(best)}` : ''}${pen}${r.st === 'draw' ? '<br>40 moves each with only kings moving and nothing taken.' : ''}</p>
     <button class="mtrx-btn mtrx-btn--primary go" id="againBtn">${G.drill ? 'Try the drill again' : 'Play again'}</button>
-    <div class="sub"><button id="watchBtn">Watch the replay</button>${r.won ? '' : '<button id="takeBack">Take back a move</button>'}<button id="changeBtn">New game</button></div></div>`;
-  overlay.querySelector('#againBtn').onclick = () => (G.drill ? startDrill(G.drill.i) : startGame({ level: G.level, forced: G.forced, human: G.human }));
+    <div class="sub"><button id="watchBtn">Watch the replay</button>${r.won || twoP() ? '' : `<button id="takeBack">Take back a move${challenge() ? ' (+1:00)' : ''}</button>`}<button id="changeBtn">New game</button></div></div>`);
+  overlay.querySelector('#againBtn').onclick = () => (G.drill ? startDrill(G.drill.i) : startGame({ level: G.level, forced: G.forced, human: G.human, mode: G.mode, play: G.play }));
   overlay.querySelector('#watchBtn').onclick = () => { hideOverlay(); autoplay = 0; $('#revPlay').textContent = 'Pause'; startReview(0, true); };
   overlay.querySelector('#takeBack')?.addEventListener('click', undo);
   overlay.querySelector('#changeBtn').onclick = showSetup;
@@ -403,11 +507,11 @@ async function startReview(i, auto) {
   const tmp = h.state.board.map((p, sq) => (p ? `r${tok}-${sq}` : 0));
   syncPieces(h.state.board, tmp);
   draw();
-  await wait(REDUCED ? 0 : 300); if (tok !== reviewTok) return;
+  await wait(REDUCED ? 0 : 420); if (tok !== reviewTok) return;
   await animateMove(h.move, tmp); if (tok !== reviewTok) return;
-  drawBoardArrows([{ a: moveArrow(h.move, h.by === 'you' ? 'm' : 'w'), xs: h.move.caps.map(rc) }]);
+  drawBoardArrows([{ a: moveArrow(h.move, akind(h.by)), xs: h.move.caps.map(rc) }]);
   if (auto && autoplay !== null) {
-    if (i < G.hist.length - 1) autoplay = setTimeout(() => startReview(i + 1, true), 900);
+    if (i < G.hist.length - 1) autoplay = setTimeout(() => startReview(i + 1, true), ms('replay') || 900);
     else stopAuto();
   }
 }
@@ -429,8 +533,10 @@ $('#revLive').onclick = () => exitReview();
 // ---------- controls ----------
 $('#undoBtn').onclick = undo;
 $('#hintBtn').onclick = askHint;
+$('#clockBtn').onclick = togglePause;
 addEventListener('keydown', (e) => {
-  if (e.target.closest('.drawer')) return;
+  if (e.target.closest('.drawer') || menu.isOpen()) return;
+  if (e.key === 'p' || e.key === 'P') { togglePause(); return; }
   if (review != null && e.key === 'ArrowLeft') { stopAuto(); startReview(review - 1); }
   else if (review != null && e.key === 'ArrowRight') { stopAuto(); startReview(review + 1); }
   else if (e.key === 'Escape' && review != null) exitReview();
@@ -465,13 +571,14 @@ const A = (pts, kind = 'm', n) => ({ pts, kind, n });
 const dots = (b, w) => `<span class="t">${'<i class="dot b"></i>'.repeat(b)}<em style="width:auto;margin:0 6px">vs</em>${'<i class="dot w"></i>'.repeat(w)}</span>`;
 const TAB = { game: 0, moves: 1, how: 2, drills: 5 };
 function gameTabHTML() {
-  const rows = LEVELS.map((l) => { const o = bestFor(`mtrx-ck-best:${l.id}:o`), f = bestFor(`mtrx-ck-best:${l.id}:f`); return `<tr><td>${l.name}</td><td>${o ? fmt(o) : '–'}</td><td>${f ? fmt(f) : '–'}</td></tr>`; }).join('');
+  const table = (suf, cap) => `<table class="bests"><caption>${cap}</caption><tr><td></td><td class="mtrx-label">Jumps optional</td><td class="mtrx-label">Forced</td></tr>${LEVELS.map((l) => { const o = bestFor(`mtrx-ck-best:${l.id}:o${suf}`), f = bestFor(`mtrx-ck-best:${l.id}:f${suf}`); return `<tr><td>${l.name}</td><td>${o ? fmt(o) : '–'}</td><td>${f ? fmt(f) : '–'}</td></tr>`; }).join('')}</table>`;
   const theme = document.documentElement.dataset.theme || '';
   return `<div class="set"><button class="mtrx-btn mtrx-btn--primary" style="width:100%" data-act="new">New game</button></div>
     <div class="set"><label class="switch"><span><b>Show moves</b><small>Glow on movable checkers and dots on legal squares</small></span><input type="checkbox" data-act="show" ${P.showMoves ? 'checked' : ''}></label></div>
     <div class="set"><div class="mtrx-label">Board</div><div class="styles">${STYLES.map((s) => `<button data-st="${s.id}" aria-pressed="${s.id === P.style}"><i class="sw" style="--l:${s.l};--d:${s.d};--f:${s.f}"></i>${s.name}</button>`).join('')}</div></div>
+    <div class="set"><div class="mtrx-label">Animation speed</div>${seg('speed', [['relaxed', 'Relaxed'], ['normal', 'Normal'], ['quick', 'Quick']], P.speed)}</div>
     <div class="set"><div class="mtrx-label">Theme</div>${seg('theme', [['', 'Light'], ['dark', 'Dark']], theme)}</div>
-    <div class="set"><div class="mtrx-label">Best times (wins)</div><table class="bests"><tr><td></td><td class="mtrx-label">Jumps optional</td><td class="mtrx-label">Forced</td></tr>${rows}</table></div>`;
+    <div class="set"><div class="mtrx-label">Best times (wins against the computer)</div>${table(':c', 'Challenge · no hints, undo +1:00')}${table('', 'Practice')}</div>`;
 }
 function mountGameTab(body) {
   body.querySelector('[data-act="new"]').onclick = () => { menu.close(); showSetup(); };
@@ -480,18 +587,21 @@ function mountGameTab(body) {
     P.style = b.dataset.st; savePrefs(); document.body.dataset.board = P.style;
     body.querySelectorAll('[data-st]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
   }));
-  bindSegs(body, (k, v) => { if (k === 'theme') { applyTheme(v); localStorage.setItem('mtrx-theme', v); } });
+  bindSegs(body, (k, v) => { if (k === 'theme') { applyTheme(v); localStorage.setItem('mtrx-theme', v); } if (k === 'speed') { P.speed = v; savePrefs(); } });
 }
 function movesTabHTML() {
   if (!G || !G.hist.length) return '<p class="empty">Every move shows up here as a picture. Tap one to watch it again on the big board.</p>';
   return `<p class="empty" style="margin-top:0">Newest first. Tap a move to replay it with arrows.</p><div class="moves">${G.hist.map((h, i) => ({ h, i })).reverse().map(({ h, i }) => {
     const mover = Math.sign(h.state.board[h.move.from]);
-    return `<button class="mcard" data-i="${i}" aria-label="Replay move ${i + 1}">${diagram({ board: h.state.board, arrows: [moveArrow(h.move, h.by === 'you' ? 'm' : 'w')], x: h.move.caps.map(rc), fl: flip() })}
+    return `<button class="mcard" data-i="${i}" aria-label="Replay move ${i + 1}">${diagram({ board: h.state.board, arrows: [moveArrow(h.move, akind(h.by))], x: h.move.caps.map(rc), fl: flip() })}
       <span><b><i class="who" style="background:${mover > 0 ? '#161616' : '#F5F2EB'}"></i>${i + 1}. ${who(h.by)}</b><small>${describe(h.move, h.state.board)}</small></span></button>`;
   }).join('')}</div>`;
 }
 const menu = mountLearn({
-  title: 'Checkers', label: 'Menu', tabs: [
+  title: 'Checkers', label: 'Menu',
+  onOpen: () => { if (running()) { pause('menu'); autoPaused = true; } },
+  onClose: () => { if (autoPaused) resume(); },
+  tabs: [
     { name: 'Game', get html() { return gameTabHTML(); }, mount: mountGameTab },
     { name: 'Moves', get html() { return movesTabHTML(); }, mount: (body) => body.querySelectorAll('.mcard').forEach((b) => (b.onclick = () => { menu.close(); hideOverlay(); startReview(+b.dataset.i); })) },
     { name: 'How to play', html: `
@@ -501,7 +611,12 @@ const menu = mountLearn({
       ${lesson('04', diagram({ pieces: [[6, 1, 'b'], [5, 2, 'w'], [3, 4, 'w']], arrows: [A([[6, 1], [4, 3], [2, 5]])], x: [[5, 2], [3, 4]] }), 'Keep jumping', 'Land next to another piece with space behind it? Keep going. One tap plays the whole chain.')}
       ${lesson('05', diagram({ pieces: [[1, 2, 'b'], [5, 4, 'B']], arrows: [A([[1, 2], [0, 1]]), A([[5, 4], [4, 3]]), A([[5, 4], [4, 5]]), A([[5, 4], [6, 3]]), A([[5, 4], [6, 5]])], hl: [[0, 1], [0, 3], [0, 5], [0, 7]] }), 'Crown a king', 'Reach the far row (yellow) to be crowned. Kings move forward and back.')}
       ${lesson('06', diagram({ pieces: [[0, 1, 'w'], [1, 0, 'b'], [1, 2, 'b'], [2, 3, 'b']], arrows: [A([[0, 1], [1, 0]], 'bad'), A([[0, 1], [2, 3]], 'bad')] }), 'Win', 'Take every piece, or leave your opponent with no legal move.')}
-      <div class="rule-card"><b>House rule: jumps are optional</b><p>Switch <b>Jumps → Forced</b> for tournament rules, where you must take whenever you can.</p></div>
+      <div class="rule-card"><b>House rule: jumps are optional</b><p>Switch <b>Forced jumps → On</b> for tournament rules, where you must take whenever you can.</p></div>
+      <h3>Ways to play</h3>
+      <div class="lesson"><b>Practice</b><p style="margin:6px 0 0">Best move shows the engine's pick with pulsing squares. Undo is free. Learn without pressure.</p></div>
+      <div class="lesson"><b>Challenge</b><p style="margin:6px 0 0">No Best move. Each undo adds 1:00 to your clock. Your wins go on a separate best-times board, so they mean something.</p></div>
+      <div class="lesson"><b>Two players</b><p style="margin:6px 0 0">Pass and play on one screen. Undo takes back one move. Best move still helps either side.</p></div>
+      <div class="lesson"><b>Pause</b><p style="margin:6px 0 0">Tap the clock (or press <kbd>P</kbd>). Opening the menu or leaving the tab pauses on its own, and the board hides until you resume.</p></div>
       <h3>The five levels</h3>${LEVELS.map((l) => `<div class="lesson"><b>${l.name}</b><p style="margin:6px 0 0">${l.note}</p></div>`).join('')}` },
     { name: 'Strategy', html: `
       ${lesson('01', diagram({ pieces: [[4, 3, 'b'], [4, 7, 'b']], arrows: [A([[4, 3], [3, 2]]), A([[4, 3], [3, 4]]), A([[4, 7], [3, 6]])], hl: [[3, 2], [3, 4], [4, 3], [4, 5]] }), 'Own the centre', 'Centre pieces have two ways forward. Edge pieces have one.')}
@@ -526,10 +641,10 @@ $('#menuBtn').onclick = () => menu.open(TAB.game);
   try {
     const g = JSON.parse(localStorage.getItem('mtrx-ck3') || 'null');
     if (g && g.S && g.S.board?.length === 64 && !g.over) {
-      G = { ...g, clock: { ms: g.clock?.ms || 0, since: null } };
+      G = { mode: 'ai', play: 'practice', undos: 0, ...g, clock: { ms: g.clock?.ms || 0, since: null, pen: g.clock?.pen || 0 } };
       if (G.drill && !DRILLS[G.drill.i]) G.drill = null;
       ids = freshIds(G.S.board); drillBar(); draw(); tickClock();
-      if (G.hist.length) startClock();
+      if (G.hist.length) { afterMove(); pause('back'); return; } // come back to a paused card, clock stopped
       afterMove(); return;
     }
   } catch { /* corrupted save: start fresh */ }
