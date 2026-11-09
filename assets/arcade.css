@@ -1,7 +1,7 @@
 /* MTRX Arcade layout · Designed by MTRX™ · Property of MTRX Digital */
 body{min-height:100vh;display:flex;flex-direction:column}
 .wm{display:block;height:22px;width:auto;color:var(--text)}
-.topbar{display:flex;align-items:center;gap:var(--space-5);padding:var(--space-4) var(--gutter);border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:20}
+.topbar{display:flex;align-items:center;gap:var(--space-5);padding:var(--space-4) var(--gutter);border-bottom:1px solid var(--border);position:sticky;top:0;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);z-index:20}
 .topbar a{text-decoration:none}.topbar .crumb{font-weight:700;font-size:var(--text-sm);color:var(--text-muted)}
 .topbar .spacer{flex:1}
 main{flex:1;width:100%;max-width:1240px;margin:0 auto;padding:var(--space-6) var(--gutter)}
@@ -54,3 +54,16 @@ kbd{font:700 12px var(--font-sans);border:1px solid var(--border);border-bottom-
   .drawer .body{padding:var(--space-5)}
   .drawer header,.drawer .tabs{padding-left:var(--space-5);padding-right:var(--space-5)}
 }
+/* dark mode polish */
+[data-theme="dark"] body{background:radial-gradient(1100px 520px at 50% -180px,rgb(237 105 29 / .09),transparent 70%) no-repeat,var(--bg)}
+[data-theme="dark"] .mtrx-card{background:linear-gradient(180deg,#1C1C20,#161619);border-color:#2C2D33}
+[data-theme="dark"] .mtrx-card--interactive:hover{border-color:var(--accent);box-shadow:0 0 0 1px rgb(237 105 29 / .25),0 18px 40px rgb(0 0 0 / .5)}
+[data-theme="dark"] .mtrx-segmented{background:var(--surface-sunk);box-shadow:inset 0 0 0 1px var(--border)}
+[data-theme="dark"] .mtrx-segmented>button[aria-pressed="true"]{background:var(--mtrx-canvas);color:var(--mtrx-ink)}
+[data-theme="dark"] .status{background:var(--surface-sunk);box-shadow:inset 0 0 0 1px var(--border)}
+[data-theme="dark"] .status.win{background:#2B3016;color:#DCE5A8;box-shadow:inset 0 0 0 1px #4C5626}
+[data-theme="dark"] .status.lose{background:#341C19;color:#F2C4BC;box-shadow:inset 0 0 0 1px #5C2C26}
+[data-theme="dark"] .drawer{box-shadow:-24px 0 60px rgb(0 0 0 / .55)}
+[data-theme="dark"] .scrim{background:rgb(0 0 0 / .6)}
+[data-theme="dark"] .lesson{background:#121214;border-color:#2A2B31}
+[data-theme="dark"] kbd{background:var(--surface-sunk)}
