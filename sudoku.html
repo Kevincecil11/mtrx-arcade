@@ -1,56 +1,30 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sudoku · MTRX™ Arcade</title><meta name="description" content="Sudoku with five honest difficulty levels, live technique coaching and a full strategy guide. Designed by MTRX™.">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sudoku · MTRX™ Arcade</title><meta name="description" content="Sudoku with five honest difficulty levels, Practice and Challenge modes, live technique coaching and a full strategy guide. Designed by MTRX™.">
 <meta name="theme-color" content="#ECEAE4"><script>try{var t=localStorage.getItem("mtrx-theme");if(t===null)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"";document.documentElement.dataset.theme=t;if(t==="dark")document.querySelector('meta[name="theme-color"]').content="#0E0E0C"}catch(e){}</script>
-<link rel="stylesheet" href="assets/mtrx-theme.css?v=3"><link rel="stylesheet" href="assets/arcade.css?v=3">
-<style>
-.board-col{display:flex;flex-direction:column;gap:var(--space-5);align-items:center}
-.grid{display:grid;grid-template-columns:repeat(9,1fr);width:min(100%,560px);aspect-ratio:1;border:3px solid var(--text);border-radius:var(--radius-md);overflow:hidden;background:var(--text);gap:1px;user-select:none}
-.cell{position:relative;background:var(--surface);border:0;padding:0;font:700 clamp(18px,4.4vw,30px)/1 var(--font-sans);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;outline:none}
-.cell.c3,.cell.c6{margin-left:2px}.cell.r3,.cell.r6{margin-top:2px}
-.cell.given{background:var(--surface-sunk)}
-.cell.entry{color:#2F3E46}[data-theme="dark"] .cell.entry{color:var(--mtrx-jane)}
-.cell.peer{background:color-mix(in srgb,var(--surface) 80%,var(--mtrx-steel))}
-.cell.same{background:color-mix(in srgb,var(--surface) 65%,var(--mtrx-mars))}
-.cell.sel{background:var(--mtrx-jane);color:var(--mtrx-ink)}
-.cell.wrong{color:var(--mtrx-steel-red)!important}
-.cell.hint-region{background:color-mix(in srgb,var(--surface) 70%,var(--mtrx-steel))}
-.cell.hint-rel{box-shadow:inset 0 0 0 2px var(--mtrx-gunmetal)}
-.cell.hint-focus{box-shadow:inset 0 0 0 3px var(--mtrx-mars);background:var(--mtrx-jane);color:var(--mtrx-ink)}
-.notes{position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);font:700 clamp(8px,1.5vw,11px)/1 var(--font-sans);color:var(--text-muted)}
-.notes span{display:flex;align-items:center;justify-content:center}
-.pad{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;width:min(100%,560px)}
-.pad button{aspect-ratio:1/1.15;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-md);font:700 clamp(16px,3vw,24px) var(--font-sans);color:var(--text);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
-.pad button small{font-size:10px;color:var(--text-subtle)}
-.pad button:hover{border-color:var(--accent)}.pad button.done{opacity:.35}
-.tools{display:flex;gap:var(--space-2);flex-wrap:wrap;justify-content:center}
-.tools .on{background:var(--text);color:var(--bg)}
-.hintcard{border:2px solid var(--accent);border-radius:var(--radius-lg);padding:var(--space-5);background:var(--surface)}
-.hintcard p{margin:var(--space-2) 0 var(--space-4);color:var(--text-muted)}
-.mini{display:inline-grid;grid-template-columns:repeat(9,18px);gap:1px;background:var(--text);border:2px solid var(--text);margin:8px 0 4px}
-.mini i{width:18px;height:18px;background:var(--surface);font:700 10px/18px var(--font-sans);text-align:center;font-style:normal;color:var(--text)}
-.mini i.b{margin-left:1px}.mini i.f{background:var(--mtrx-jane);box-shadow:inset 0 0 0 2px var(--mtrx-mars);color:var(--mtrx-ink)}
-.mini i.r{background:color-mix(in srgb,var(--surface) 70%,var(--mtrx-steel))}.mini i.x{color:var(--mtrx-steel-red)}
-[data-theme="dark"] .grid{background:#4A4C55;border-color:#6E7180}
-[data-theme="dark"] .mini{background:#4A4C55;border-color:#6E7180}
-[data-theme="dark"] .cell.sel{box-shadow:inset 0 0 0 2px var(--mtrx-mars)}
-[data-theme="dark"] .hintcard{background:#18181B}
-</style></head><body>
-<div class="topbar"><a href="index.html" id="home"></a><span class="crumb">Arcade / Sudoku</span><span class="spacer"></span>
-<button class="mtrx-btn mtrx-btn--secondary sm" id="learnBtn">How to play &amp; strategy</button>
-<div class="mtrx-segmented" id="themeSeg"><button aria-pressed="true" data-t="">Light</button><button aria-pressed="false" data-t="dark">Dark</button></div></div>
-<main><div class="game-wrap">
-<div class="board-col"><div id="gridHost" class="grid" role="grid" aria-label="Sudoku board"></div>
-<div class="pad" id="pad"></div>
-<div class="tools"><button class="mtrx-btn mtrx-btn--secondary sm" id="notesBtn">Notes <kbd>N</kbd></button><button class="mtrx-btn mtrx-btn--secondary sm" id="eraseBtn">Erase</button><button class="mtrx-btn mtrx-btn--secondary sm" id="undoBtn">Undo</button><button class="mtrx-btn mtrx-btn--primary sm" id="hintBtn">Teach me a move</button></div></div>
-<div class="panel"><div><div class="mtrx-label">MTRX™ Arcade</div><h1>Sudoku</h1></div>
-<div><div class="mtrx-label">Difficulty</div><div class="mtrx-segmented diff" id="diffSeg"></div></div>
-<div class="stat-row"><div class="stat"><span class="mtrx-label" style="margin:0">Time</span><b id="time">0:00</b></div><div class="stat"><span class="mtrx-label" style="margin:0">Mistakes</span><b id="mist">0</b></div><div class="stat"><span class="mtrx-label" style="margin:0">Hints</span><b id="hints">0</b></div></div>
-<div class="status" id="status">Loading the engine…</div>
-<div id="hintHost"></div>
-<div class="mtrx-card" style="padding:var(--space-5)"><div class="mtrx-label">Puzzle number</div><div style="font-weight:700;font-size:var(--text-lg)" id="pnum">–</div><p style="font-size:var(--text-sm);color:var(--text-muted);margin:6px 0 12px" id="pinfo"></p>
-<div class="btn-row"><button class="mtrx-btn mtrx-btn--primary sm" id="newBtn">New puzzle</button><button class="mtrx-btn mtrx-btn--ghost sm" id="replayBtn">Play a number</button></div></div>
-<label style="display:flex;gap:10px;align-items:center;font-weight:700;font-size:var(--text-sm)"><input type="checkbox" id="showMist" checked> Show mistakes as I play</label>
-</div></div></main>
-<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Engine: sudoku-core (MIT)</span><span>mtrxdigital.com</span></footer></div>
-<script>(function(){var s=document.getElementById("status");function show(m){if(!s)return;s.textContent="Something went wrong ("+m+"). Pull down to refresh. If it keeps happening, screenshot this box.";s.className="status lose"}addEventListener("error",function(e){if(!e.filename||e.filename.indexOf(location.origin)===0)show(e.message||"script error")});addEventListener("unhandledrejection",function(e){var r=e.reason;show(String(r&&r.message||r))});setTimeout(function(){if(s&&s.textContent.indexOf("Loading the engine")===0)show("the game script did not start")},20000)})();</script>
-<script type="module" src="js/sudoku.js?v=3"></script></body></html>
+<link rel="stylesheet" href="assets/mtrx-theme.css?v=5"><link rel="stylesheet" href="assets/arcade.css?v=5"><link rel="stylesheet" href="assets/play.css?v=5"><link rel="stylesheet" href="assets/sudoku.css?v=5">
+</head><body class="sd">
+<div class="topbar"><a href="index.html" id="home" aria-label="MTRX Arcade home"></a><span class="crumb">Sudoku</span><span class="spacer"></span>
+<button class="icon-btn" id="learnBtn" aria-label="How to play and techniques"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg><span>Learn</span></button>
+<button class="icon-btn" id="menuBtn" aria-label="Game menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button></div>
+<main class="sd-main">
+  <div class="hud ssize" aria-label="Mistakes, time and hints">
+    <div class="who-hud" id="hudMist"><i class="ic"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></i><span><small>Mistakes</small><b id="mist">0</b></span></div>
+    <button class="clock" id="clockBtn" aria-label="Pause"><span class="pen" id="pen"></span><span class="t"><svg class="pz" id="pz" viewBox="0 0 24 24" aria-hidden="true"></svg><b id="clock">0:00</b></span><small id="clockSub">Sudoku</small></button>
+    <div class="who-hud right" id="hudHints"><span><small id="rightLbl">Hints</small><b id="hints">0</b></span><i class="ic"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg></i></div>
+  </div>
+  <div class="sd-board ssize"><div id="gridHost" class="grid empty" role="grid" aria-label="Sudoku board"></div><div class="overlay" id="overlay" hidden></div></div>
+  <div class="side ssize">
+    <div class="status-line" id="status" aria-live="polite">Loading the engine…</div>
+    <div id="hintHost"></div>
+    <div class="pad" id="pad"></div>
+    <div class="tools" id="tools">
+      <button class="tool" id="undoBtn"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Undo</button>
+      <button class="tool" id="eraseBtn"><svg viewBox="0 0 24 24"><path d="M20 20H9L4.5 15.5a2 2 0 0 1 0-2.8L13 4.2a2 2 0 0 1 2.8 0l4 4a2 2 0 0 1 0 2.8L11 20"/><path d="M8.5 10.5l5 5"/></svg>Erase</button>
+      <button class="tool" id="notesBtn" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span id="notesLbl">Notes off</span></button>
+      <button class="tool primary" id="hintBtn"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>Teach me</button>
+    </div>
+  </div>
+</main>
+<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Engine: sudoku-core (MIT) · v4</span><span>mtrxdigital.com</span></footer></div>
+<script>(function(){var s=document.getElementById("status");function show(m){if(!s)return;s.textContent="Something went wrong ("+m+"). Pull down to refresh. If it keeps happening, screenshot this.";s.className="status-line lose"}addEventListener("error",function(e){if(!e.filename||e.filename.indexOf(location.origin)===0)show(e.message||"script error")});addEventListener("unhandledrejection",function(e){var r=e.reason;show(String(r&&r.message||r))});setTimeout(function(){if(s&&s.textContent.indexOf("Loading the engine")===0)show("the game script did not start")},20000)})();</script>
+<script type="module" src="js/sudoku.js?v=5"></script></body></html>
