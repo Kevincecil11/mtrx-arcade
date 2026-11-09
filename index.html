@@ -1,6 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MTRX™ Arcade</title><meta name="description" content="Classic strategy games with honest difficulty and real coaching. Designed by MTRX™.">
-<link rel="stylesheet" href="assets/mtrx-theme.css"><link rel="stylesheet" href="assets/arcade.css">
+<meta name="theme-color" content="#ECEAE4"><script>try{var t=localStorage.getItem("mtrx-theme");if(t===null)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"";document.documentElement.dataset.theme=t;if(t==="dark")document.querySelector('meta[name="theme-color"]').content="#0E0E0C"}catch(e){}</script>
+<link rel="stylesheet" href="assets/mtrx-theme.css?v=3"><link rel="stylesheet" href="assets/arcade.css?v=3">
 <style>
 .hero{padding:var(--space-8) 0 var(--space-7)}
 .hero .mtrx-display{font-size:clamp(64px,12vw,150px);color:var(--accent)}
@@ -24,10 +25,8 @@
 </div></main>
 <div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Property of MTRX Digital</span><span>mtrxdigital.com</span></footer></div>
 <script type="module">
-import { WORDMARK } from './js/wordmark.js';
+import { WORDMARK } from './js/wordmark.js?v=3';
+import { mountThemeToggle } from './js/theme.js?v=3';
 document.getElementById('home').innerHTML = WORDMARK;
-const setTheme = (t) => { document.body.dataset.theme = t; localStorage.setItem('mtrx-theme', t);
-  document.querySelectorAll('#themeSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.t === t)); };
-document.querySelectorAll('#themeSeg button').forEach((b) => (b.onclick = () => setTheme(b.dataset.t)));
-setTheme(localStorage.getItem('mtrx-theme') || '');
+mountThemeToggle();
 </script></body></html>

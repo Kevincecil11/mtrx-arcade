@@ -1,6 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Checkers · MTRX™ Arcade</title><meta name="description" content="Checkers against an AI with five real difficulty levels, visual move replays, illustrated strategy and drills. Designed by MTRX™.">
-<link rel="stylesheet" href="assets/mtrx-theme.css"><link rel="stylesheet" href="assets/arcade.css"><link rel="stylesheet" href="assets/checkers.css">
+<meta name="theme-color" content="#ECEAE4"><script>try{var t=localStorage.getItem("mtrx-theme");if(t===null)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"";document.documentElement.dataset.theme=t;if(t==="dark")document.querySelector('meta[name="theme-color"]').content="#0E0E0C"}catch(e){}</script>
+<link rel="stylesheet" href="assets/mtrx-theme.css?v=3"><link rel="stylesheet" href="assets/arcade.css?v=3"><link rel="stylesheet" href="assets/checkers.css?v=3">
 </head><body data-board="walnut">
 <div class="topbar"><a href="index.html" id="home" aria-label="MTRX Arcade home"></a><span class="crumb">Arcade / Checkers</span><span class="spacer"></span>
 <button class="mtrx-btn mtrx-btn--secondary sm" id="learnBtn"><span class="long">How to play &amp; strategy</span><span class="short">Learn</span></button>
@@ -28,5 +29,6 @@
   <div><div class="mtrx-label">Moves · tap one to replay it</div><div class="moves" id="moves"></div></div>
 </aside>
 </div></main>
-<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>MTRX checkers engine</span><span>mtrxdigital.com</span></footer></div>
-<script type="module" src="js/checkers.js"></script></body></html>
+<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>MTRX checkers engine · v2.1</span><span>mtrxdigital.com</span></footer></div>
+<script>(function(){var s=document.getElementById("status");function show(m){if(!s)return;s.textContent="Something went wrong ("+m+"). Pull down to refresh. If it keeps happening, screenshot this box.";s.className="status lose"}addEventListener("error",function(e){if(!e.filename||e.filename.indexOf(location.origin)===0)show(e.message||"script error")});addEventListener("unhandledrejection",function(e){var r=e.reason;show(String(r&&r.message||r))});setTimeout(function(){if(s&&s.textContent.indexOf("Setting up the board")===0)show("the game script did not start")},8000)})();</script>
+<script type="module" src="js/checkers.js?v=3"></script></body></html>

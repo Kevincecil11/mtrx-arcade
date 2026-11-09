@@ -114,3 +114,16 @@ body[data-board="marble"] .sq.dark{background:radial-gradient(120% 90% at 20% 10
   .moves{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){.pc{transition:none}.pc.crowning .crown{animation:none}}
+.review-bar[hidden]{display:none!important}
+/* dark mode */
+[data-theme="dark"] .cboard{box-shadow:0 0 0 1px rgb(255 255 255 / .06),0 26px 60px rgb(0 0 0 / .65)}
+[data-theme="dark"] .squares{filter:brightness(.9) saturate(.95)}
+[data-theme="dark"] body[data-board="mtrx"]{--frame:#2A2A2F}
+[data-theme="dark"] .review-bar{background:var(--surface-sunk);box-shadow:inset 3px 0 0 var(--mtrx-mars),inset 0 0 0 1px var(--border)}
+[data-theme="dark"] .status.think,[data-theme="dark"] .rule-card{background:#2A2619;color:var(--mtrx-jane);box-shadow:inset 0 0 0 1px #4A4227}
+[data-theme="dark"] .rule-card p,[data-theme="dark"] .rule-card b{color:var(--mtrx-jane)!important}
+[data-theme="dark"] .dot.b{box-shadow:inset 0 0 0 1.5px #5d5d63}
+[data-theme="dark"] .mcard{background:#18181B}
+[data-theme="dark"] .mcard.on{box-shadow:0 0 0 1px var(--accent)}
+[data-theme="dark"] .style-menu button{background:var(--surface-sunk)}
+[data-theme="dark"] .style-menu button[aria-pressed="true"]{border-color:var(--mtrx-canvas);box-shadow:inset 0 0 0 1px var(--mtrx-canvas)}
