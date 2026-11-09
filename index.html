@@ -1,32 +1,67 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MTRX™ Arcade</title><meta name="description" content="Classic strategy games with honest difficulty and real coaching. Designed by MTRX™.">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MTRX™ Arcade · Classic strategy games, honestly hard</title><meta name="description" content="Checkers and Sudoku with five honest difficulty levels, Practice and Challenge modes, two-player checkers and coaching you can open any time. Chess, Go and Crossword next. Designed by MTRX™.">
 <meta name="theme-color" content="#ECEAE4"><script>try{var t=localStorage.getItem("mtrx-theme");if(t===null)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"";document.documentElement.dataset.theme=t;if(t==="dark")document.querySelector('meta[name="theme-color"]').content="#0E0E0C"}catch(e){}</script>
-<link rel="stylesheet" href="assets/mtrx-theme.css?v=3"><link rel="stylesheet" href="assets/arcade.css?v=3">
-<style>
-.hero{padding:var(--space-8) 0 var(--space-7)}
-.hero .mtrx-display{font-size:clamp(64px,12vw,150px);color:var(--accent)}
-.hero p{font-size:var(--text-lg);color:var(--text-muted);max-width:620px}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-5)}
-.tile{display:flex;flex-direction:column;gap:var(--space-3);text-decoration:none;min-height:260px;position:relative}
-.tile .mtrx-numeral{font-size:56px}.tile h2{font-size:var(--text-2xl);margin:0}.tile p{color:var(--text-muted);margin:0;flex:1}
-.tile.soon{opacity:.55;pointer-events:none}
-.tile .motif{position:absolute;top:24px;right:24px;width:36px;height:36px}
-</style></head><body>
+<link rel="stylesheet" href="assets/mtrx-theme.css?v=5"><link rel="stylesheet" href="assets/arcade.css?v=5"><link rel="stylesheet" href="assets/home.css?v=5">
+</head><body class="home">
 <div class="topbar"><span id="home"></span><span class="crumb">Arcade</span><span class="spacer"></span>
-<div class="mtrx-segmented" id="themeSeg"><button aria-pressed="true" data-t="">Light</button><button aria-pressed="false" data-t="dark">Dark</button></div></div>
-<main><section class="hero"><div class="mtrx-label">MTRX™ Arcade</div><div class="mtrx-display">PLAY.</div>
-<p>Five classic strategy games. Five honest levels each, from genuinely easy to genuinely hard. Strategy guides and live coaching any time you want them.</p></section>
-<div class="tiles">
-<a class="mtrx-card mtrx-card--interactive tile" href="sudoku.html"><span class="mtrx-numeral">01</span><h2>Sudoku</h2><p>Every puzzle unique and rated by the techniques it needs. "Teach me a move" explains the logic on your own board.</p><span class="mtrx-tag mtrx-tag--mars" style="align-self:flex-start">Play now</span></a>
-<a class="mtrx-card mtrx-card--interactive tile" href="checkers.html"><span class="mtrx-numeral">02</span><h2>Checkers</h2><p>Five honest AI levels, optional or forced jumps, smooth moves, picture replays of every move and six drills.</p><span class="mtrx-tag mtrx-tag--mars" style="align-self:flex-start">Play now</span></a>
-<div class="mtrx-card tile soon"><span class="mtrx-numeral">03</span><h2>Chess</h2><p>Stockfish under the hood, five calibrated levels, openings and tactics trainer.</p><span class="mtrx-tag" style="align-self:flex-start">Next drop</span></div>
-<div class="mtrx-card tile soon"><span class="mtrx-numeral">04</span><h2>Go</h2><p>KataGo networks in the browser on 9×9, 13×13 and 19×19.</p><span class="mtrx-tag" style="align-self:flex-start">Next drop</span></div>
-<div class="mtrx-card tile soon"><span class="mtrx-numeral">05</span><h2>Crossword</h2><p>Fresh grids from a graded clue bank, easy to cryptic.</p><span class="mtrx-tag" style="align-self:flex-start">Next drop</span></div>
-</div></main>
+<a class="icon-btn" href="#games" style="text-decoration:none"><span>Games</span></a>
+<button class="icon-btn" id="themeBtn" aria-label="Switch light or dark"><svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg><svg class="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg></button></div>
+<main>
+<section class="hero">
+  <div>
+    <div class="mtrx-label fade-up">MTRX™ Arcade · Volume 01</div>
+    <h1><span class="ln"><span>Play</span></span><span class="ln"><span>slow<em>.</em></span></span><span class="ln"><span>Think <em>deep.</em></span></span></h1>
+    <p class="lede fade-up" style="--d:380ms">Classic strategy games with five honest levels each, from genuinely easy to genuinely ruthless. Unhurried animation, a clock you can pause, and a coach that's there the second you want one.</p>
+    <div class="cta fade-up" style="--d:520ms"><a class="mtrx-btn mtrx-btn--primary" href="checkers.html">Play checkers</a><a class="mtrx-btn mtrx-btn--secondary" href="sudoku.html">Play sudoku</a></div>
+    <div class="facts fade-up" style="--d:660ms"><div><b>05</b><span>Games</span></div><div><b>05</b><span>Honest levels each</span></div><div><b>02</b><span>Ways to play</span></div><div><b>00</b><span>Ads or sign-ups</span></div></div>
+  </div>
+  <div class="stage" aria-hidden="true">
+    <div class="glow"></div>
+    <div class="iso"><div class="bd" id="hbd"></div><div class="pcs" id="hpcs"></div></div>
+    <div class="chipf a"><i class="dt"></i><span><small>Expert</small>is thinking</span></div>
+    <div class="chipf b"><span><small>Challenge</small><b id="hclock">0:00</b></span></div>
+  </div>
+</section>
+<div class="band" aria-hidden="true"><div class="rail" id="rail"></div></div>
+<section class="cont" id="cont" hidden><div class="mtrx-label">Pick up where you left off</div><div class="row" id="contRow"></div></section>
+<div class="sec" id="games"><div><div class="mtrx-label">The games</div><h2>Choose your<br>board</h2></div><p>Every game shares one calm shell: a clock you can pause, Practice or Challenge, and a menu with rules, strategy and drills that never loses your place.</p></div>
+<div class="bento">
+  <a class="g big g-ck reveal" href="checkers.html"><span class="num">01</span><span class="state">Play now</span>
+    <div class="art"><svg viewBox="0 0 200 200"><rect x="4" y="4" width="192" height="192" rx="8" fill="#3A2416"/><g transform="translate(12 12) scale(.88)"><rect width="200" height="200" fill="#E9CF9F"/><g fill="#7B4F2E"><rect x="50" width="50" height="50"/><rect x="150" width="50" height="50"/><rect y="50" width="50" height="50"/><rect x="100" y="50" width="50" height="50"/><rect x="50" y="100" width="50" height="50"/><rect x="150" y="100" width="50" height="50"/><rect y="150" width="50" height="50"/><rect x="100" y="150" width="50" height="50"/></g>
+      <circle cx="75" cy="125" r="17" fill="none" stroke="#F4E3B2" stroke-width="3" stroke-dasharray="5 5" opacity=".9"/>
+      <path d="M25 170 Q 40 70 125 78" fill="none" stroke="#ED691D" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 10"/><path d="M114 70l14 8-14 8z" fill="#ED691D"/>
+      <g><circle cx="25" cy="178" r="19" fill="#111"/><circle cx="25" cy="175" r="19" fill="#222"/><circle cx="25" cy="175" r="11" fill="none" stroke="#3b3b3b" stroke-width="2"/></g>
+      <g><circle cx="125" cy="178" r="19" fill="#111"/><circle cx="125" cy="175" r="19" fill="#222"/><circle cx="125" cy="175" r="11" fill="none" stroke="#3b3b3b" stroke-width="2"/></g>
+      <g><circle cx="175" cy="31" r="19" fill="#a9a192"/><circle cx="175" cy="28" r="19" fill="#F5F2EB"/><circle cx="175" cy="24" r="19" fill="#F7F4ED" stroke="#d5cfc2"/><path d="M164 22l5 4 6-9 6 9 5-4-2 11h-18z" fill="#ED691D"/></g>
+    </g></svg></div>
+    <div class="txt"><h3>Checkers</h3><p>Five AI levels that really get harder, or pass-and-play with a friend. Slow, soft jumps, picture replays of every move and six drills.</p>
+      <div class="tags"><span>Two players</span><span>Challenge mode</span><span>Forced or free jumps</span><span>6 drills</span></div>
+      <span class="best" id="ckBest"></span><span class="play">Play checkers <span>→</span></span></div></a>
+  <a class="g big g-sd reveal" href="sudoku.html" style="--d:120ms"><span class="num">02</span><span class="state">Play now</span>
+    <div class="art"><svg viewBox="0 0 200 200"><rect x="6" y="6" width="188" height="188" rx="10" fill="#F6F5F1" stroke="#0E0E0C" stroke-width="5"/><path d="M68.7 8v184M131.3 8v184M8 68.7h184M8 131.3h184" stroke="#0E0E0C" stroke-width="2"/>
+      <rect x="71" y="71" width="58" height="58" fill="#F4E3B2" stroke="#ED691D" stroke-width="4"/>
+      <g font-family="Nunito Sans,system-ui,sans-serif" font-weight="700" font-size="34" text-anchor="middle" fill="#0E0E0C"><text x="38" y="50">5</text><text x="163" y="50">3</text><text x="38" y="113">9</text><text x="100" y="113" fill="#ED691D">7</text><text x="163" y="175">1</text><text x="100" y="175">8</text></g>
+      <g font-family="Nunito Sans,system-ui,sans-serif" font-weight="700" font-size="12" fill="#6E7180"><text x="84" y="28">2</text><text x="108" y="28">4</text><text x="84" y="56">6</text><text x="146" y="92">2</text><text x="170" y="92">6</text><text x="22" y="154">4</text><text x="46" y="154">6</text></g></svg></div>
+    <div class="txt"><h3>Sudoku</h3><p>Every grid unique, rated by the hardest technique it needs. In Practice, Teach me explains the next step on your own board.</p>
+      <div class="tags"><span>Teach me</span><span>Challenge mode</span><span>Puzzle numbers</span><span>9 techniques</span></div>
+      <span class="best" id="sdBest"></span><span class="play">Play sudoku <span>→</span></span></div></a>
+  <div class="g sm g-cs soon reveal" style="--d:0ms"><span class="num">03</span><span class="state">In the workshop</span>
+    <div class="art"><svg viewBox="0 0 120 120"><g opacity=".9"><rect width="120" height="120" rx="8" fill="rgb(255 255 255 / .08)"/><rect x="40" width="40" height="40" fill="rgb(255 255 255 / .14)"/><rect y="40" width="40" height="40" fill="rgb(255 255 255 / .14)"/><rect x="80" y="40" width="40" height="40" fill="rgb(255 255 255 / .14)"/><rect x="40" y="80" width="40" height="40" fill="rgb(255 255 255 / .14)"/></g><path d="M20 100V60h40v-40" fill="none" stroke="#ED691D" stroke-width="3" stroke-dasharray="3 6" stroke-linecap="round"/><circle cx="100" cy="20" r="11" fill="none" stroke="#ED691D" stroke-width="3"/><text x="20" y="114" font-size="38" text-anchor="middle" fill="#E8ECEE" font-family="Georgia,serif">♞&#xFE0E;</text></svg></div>
+    <div class="txt"><h3>Chess</h3><p>Stockfish under the hood, five calibrated levels, an openings and tactics trainer.</p><div class="meter"><i style="width:35%"></i></div></div></div>
+  <div class="g sm g-go soon reveal" style="--d:120ms"><span class="num">04</span><span class="state">In the workshop</span>
+    <div class="art"><svg viewBox="0 0 120 120"><rect width="120" height="120" rx="8" fill="#C9A86A"/><g stroke="#3A2416" stroke-width="1.5"><path d="M15 15v90M37.5 15v90M60 15v90M82.5 15v90M105 15v90M15 15h90M15 37.5h90M15 60h90M15 82.5h90M15 105h90"/></g><g><circle cx="37.5" cy="37.5" r="10" fill="#111"/><circle cx="60" cy="60" r="10" fill="#111"/><circle cx="82.5" cy="37.5" r="10" fill="#F5F2EB"/><circle cx="60" cy="37.5" r="10" fill="#F5F2EB"/><circle cx="37.5" cy="82.5" r="10" fill="#111"/><circle cx="82.5" cy="82.5" r="10" fill="#F5F2EB"/></g><circle cx="60" cy="82.5" r="10" fill="none" stroke="#ED691D" stroke-width="3"/></svg></div>
+    <div class="txt"><h3>Go</h3><p>KataGo networks in the browser on 9×9, 13×13 and 19×19 boards.</p><div class="meter"><i style="width:15%"></i></div></div></div>
+  <div class="g sm g-cw soon reveal" style="--d:240ms"><span class="num">05</span><span class="state">In the workshop</span>
+    <div class="art"><svg viewBox="0 0 120 120"><g fill="#F8E9E5"><rect x="0" y="0" width="118" height="118" rx="6" fill="#7a332b"/></g><g fill="#F6F5F1" stroke="#7a332b" stroke-width="2"><rect x="2" y="2" width="23" height="23"/><rect x="25" y="2" width="23" height="23"/><rect x="48" y="2" width="23" height="23"/><rect x="71" y="2" width="23" height="23"/><rect x="2" y="25" width="23" height="23"/><rect x="48" y="25" width="23" height="23"/><rect x="94" y="25" width="23" height="23"/><rect x="2" y="48" width="23" height="23"/><rect x="25" y="48" width="23" height="23"/><rect x="48" y="48" width="23" height="23"/><rect x="71" y="48" width="23" height="23"/><rect x="94" y="48" width="23" height="23"/><rect x="2" y="71" width="23" height="23"/><rect x="48" y="71" width="23" height="23"/><rect x="94" y="71" width="23" height="23"/><rect x="2" y="94" width="23" height="23"/><rect x="25" y="94" width="23" height="23"/><rect x="48" y="94" width="23" height="23"/><rect x="94" y="94" width="23" height="23"/></g><g font-family="Tanker,Impact,sans-serif" font-size="17" text-anchor="middle" fill="#0E0E0C"><text x="13.5" y="20">M</text><text x="36.5" y="20">T</text><text x="59.5" y="20">R</text><text x="82.5" y="20">X</text><text x="13.5" y="66">P</text><text x="36.5" y="66">L</text><text x="59.5" y="66">A</text><text x="82.5" y="66">Y</text></g><rect x="71" y="48" width="23" height="23" fill="none" stroke="#ED691D" stroke-width="3"/></svg></div>
+    <div class="txt"><h3>Crossword</h3><p>Fresh grids from a graded clue bank, from easy to cryptic.</p><div class="meter"><i style="width:10%"></i></div></div></div>
+</div>
+<div class="sec"><div><div class="mtrx-label">House rules</div><h2>Fair play,<br>no tricks</h2></div></div>
+<div class="why">
+  <div class="mtrx-card reveal"><span class="mtrx-numeral">01</span><h3>Honest difficulty</h3><p>Levels are tested against each other: each one beats the level below it. Every coin flip uses your device's secure random generator, so no two games repeat.</p></div>
+  <div class="mtrx-card reveal" style="--d:120ms"><span class="mtrx-numeral">02</span><h3>Learn without losing your place</h3><p>Rules, strategy, techniques and drills live in the menu. Opening it pauses the clock and hides the board until you come back.</p></div>
+  <div class="mtrx-card reveal" style="--d:240ms"><span class="mtrx-numeral">03</span><h3>Practice or Challenge</h3><p>Practice gives you the coach and free undos. Challenge takes the coach away, adds time penalties, and keeps a separate best-times board.</p></div>
+</div>
+<div class="end reveal"><div class="mtrx-label">Your move</div><p class="big">Pick a<br>board<em>.</em></p><div class="cta" style="justify-content:center;margin-top:var(--space-5)"><a class="mtrx-btn mtrx-btn--primary" href="checkers.html">Checkers</a><a class="mtrx-btn mtrx-btn--secondary" href="sudoku.html">Sudoku</a></div></div>
+</main>
 <div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Property of MTRX Digital</span><span>mtrxdigital.com</span></footer></div>
-<script type="module">
-import { WORDMARK } from './js/wordmark.js?v=3';
-import { mountThemeToggle } from './js/theme.js?v=3';
-document.getElementById('home').innerHTML = WORDMARK;
-mountThemeToggle();
-</script></body></html>
+<script type="module" src="js/home.js?v=5"></script></body></html>
