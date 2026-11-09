@@ -1,14 +1,12 @@
 // MTRX™ Arcade · Checkers v2. Rules + AI: MTRX checkers engine. UI, levels and lessons: Designed by MTRX™
-import { WORDMARK } from './wordmark.js';
-import { mountLearn } from './learn.js';
-import { BLACK, WHITE, initialBoard, newState, genMoves, applyMove, sameMove, status } from './checkers-engine.js';
+import { WORDMARK } from './wordmark.js?v=3';
+import { mountLearn } from './learn.js?v=3';
+import { mountThemeToggle } from './theme.js?v=3';
+import { BLACK, WHITE, initialBoard, newState, genMoves, applyMove, sameMove, status } from './checkers-engine.js?v=3';
 
 const $ = (s) => document.querySelector(s);
 $('#home').innerHTML = WORDMARK;
-const setTheme = (t) => { document.body.dataset.theme = t; localStorage.setItem('mtrx-theme', t);
-  document.querySelectorAll('#themeSeg button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.t === t)); };
-document.querySelectorAll('#themeSeg button').forEach((b) => (b.onclick = () => setTheme(b.dataset.t)));
-setTheme(localStorage.getItem('mtrx-theme') || '');
+mountThemeToggle();
 
 const LEVELS = [
   { id: 'easy', name: 'Easy', note: 'Plays a random move half the time and looks only 2 moves ahead. Good for learning.' },
@@ -48,7 +46,7 @@ const busy = () => thinking || animating;
 const legal = () => genMoves(S, forced);
 const flip = () => human === WHITE;
 const disp = (sq) => (flip() ? 63 - sq : sq);
-const worker = new Worker(new URL('./checkers-worker.js', import.meta.url), { type: 'module' });
+const worker = new Worker(new URL('./checkers-worker.js?v=3', import.meta.url), { type: 'module' });
 
 // ---------- board DOM ----------
 const boardEl = $('#board'), pcLayer = $('#pieces'), arrowSvg = $('#arrows');
@@ -130,7 +128,6 @@ function describe(m, board) {
   return s;
 }
 const who = (by) => (by === 'you' ? 'You' : drill ? 'Drill AI' : 'AI');
-const sideName = (pl) => (pl === BLACK ? 'Black' : 'White');
 
 // ---------- drawing ----------
 function setStatus(t, cls = '') { const el = $('#status'); el.textContent = t; el.className = 'status ' + cls; }
