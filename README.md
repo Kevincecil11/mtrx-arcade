@@ -9,9 +9,9 @@ Local test: `npx serve .` (or `python3 -m http.server`) in this folder, then ope
 
 ## Open-source engines (loaded from jsDelivr, esm.sh fallback)
 - Sudoku: sudoku-core v4 (MIT, Komeil Mehranfar). Unique puzzles rated L1-L10 by the hardest technique needed; teachHint powers "Teach me a move".
-- Checkers: rapid-draughts 1.0.6 (MIT, loks0n). English draughts rules, bitboard move generation, alpha-beta search.
+- Checkers: MTRX checkers engine (js/checkers-engine.js). English draughts with a switch for optional or forced jumps, alpha-beta search with transposition table. Written in-house because rapid-draughts (MIT) can't turn compulsory capture off.
 
 ## Difficulty design
 Sudoku: Easy L2 · Medium L4 · Intermediate L5 · Hard L7 · Expert L8.
-Checkers (search depth / random-move rate): Easy 2 / 60% · Medium 3 / 20% · Intermediate 5 / 6% · Hard 7 / 0% + random opening · Expert 9 / 0% + random opening ballot.
+Checkers (search depth / random-move rate): Easy 2 / 50% · Medium 3 / 18% · Intermediate 5 / 5% · Hard 7 / 0%, random among equal moves · Expert 10+ (1.5 s per move) / 0%, random opening. Tested in self-play: every level beat the one below it.
 All randomness comes from crypto.getRandomValues.

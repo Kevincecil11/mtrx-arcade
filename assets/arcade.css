@@ -40,3 +40,17 @@ kbd{font:700 12px var(--font-sans);border:1px solid var(--border);border-bottom-
 .spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp 0.8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .err{padding:var(--space-5);border-radius:var(--radius-md);background:var(--mtrx-jane);color:var(--mtrx-ink)}
+/* responsive chrome */
+[hidden]{display:none!important}
+.topbar .short{display:none}
+@media(max-width:640px){
+  .topbar{gap:var(--space-3);padding:var(--space-3) var(--space-4)}
+  .topbar .crumb{display:none}
+  .topbar .long{display:none}.topbar .short{display:inline}
+  .topbar .mtrx-segmented>button{padding:6px 10px;font-size:var(--text-xs)}
+  main{padding:var(--space-4)}
+  .panel h1{font-size:var(--text-2xl)}
+  .mtrx-credit{flex-direction:column;gap:var(--space-2)}
+  .drawer .body{padding:var(--space-5)}
+  .drawer header,.drawer .tabs{padding-left:var(--space-5);padding-right:var(--space-5)}
+}
