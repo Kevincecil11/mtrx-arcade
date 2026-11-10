@@ -80,10 +80,31 @@ if (cs && !cs.over && cs.moves?.length) {
   const who = cs.mode === '2p' ? 'Two players' : `${cs.drill ? 'Drill' : LV[cs.level] || 'Chess'}${cs.play === 'challenge' ? ' · Challenge' : ''}`;
   cards.push(`<a class="cc" href="chess.html"><svg class="ico" viewBox="0 0 44 44"><rect width="44" height="44" fill="#EEEED2"/><rect width="22" height="22" x="22" fill="#769656"/><rect width="22" height="22" y="22" fill="#769656"/><text x="22" y="31" font-size="26" text-anchor="middle" font-family="Georgia,serif" fill="#0E0E0C">\u265e\ufe0e</text></svg><span><b>Chess</b><small>${who} · ${Math.ceil(cs.moves.length / 2)} moves · ${fmt((cs.clock?.ms || 0) + (cs.clock?.pen || 0))}</small></span><span class="go">→</span></a>`);
 }
+const cw = read('mtrx-cw1');
+if (cw && !cw.over && cw.words?.length && Object.keys(cw.fill || {}).length > (cw.gifts?.length || 0)) {
+  const n = cw.words.length;
+  cards.push(`<a class="cc" href="crossword.html"><svg class="ico" viewBox="0 0 44 44"><rect width="44" height="44" fill="#A44A3F"/><g fill="#F6F5F1"><rect x="4" y="4" width="11" height="11" rx="2"/><rect x="16.5" y="4" width="11" height="11" rx="2"/><rect x="29" y="4" width="11" height="11" rx="2"/><rect x="16.5" y="16.5" width="11" height="11" rx="2"/><rect x="16.5" y="29" width="11" height="11" rx="2"/></g></svg><span><b>Crossword</b><small>${LV[cw.level] || 'Crossword'}${cw.play === 'challenge' ? ' · Challenge' : ''} · ${n} words · ${fmt((cw.clock?.ms || 0) + (cw.clock?.pen || 0))}</small></span><span class="go">→</span></a>`);
+}
 const sd = read('mtrx-sudoku2');
 if (sd && !sd.done && sd.values) {
   const filled = sd.values.filter((v) => v != null).length;
   cards.push(`<a class="cc" href="sudoku.html"><svg class="ico" viewBox="0 0 44 44"><rect width="44" height="44" fill="#F4E3B2"/><path d="M14.7 0v44M29.3 0v44M0 14.7h44M0 29.3h44" stroke="#0E0E0C" stroke-width="1.5"/><text x="22" y="27" font-size="12" font-weight="700" text-anchor="middle" font-family="Nunito Sans,sans-serif">7</text></svg><span><b>Sudoku</b><small>${LV[sd.idx] || 'Sudoku'}${sd.play === 'challenge' ? ' · Challenge' : ''} · ${filled}/81 · ${fmt((sd.clock?.ms || 0) + (sd.clock?.pen || 0))}</small></span><span class="go">→</span></a>`);
+}
+const gs = read('mtrx-go1');
+if (gs && !gs.over && Array.isArray(gs.moves) && gs.moves.length && [9, 13, 19].includes(gs.N)) {
+  const who = gs.drill ? 'Drill' : gs.mode === '2p' ? 'Two players' : `${LV[gs.level] || 'Go'}${gs.play === 'challenge' ? ' · Challenge' : ''}`;
+  cards.push(`<a class="cc" href="go.html"><svg class="ico" viewBox="0 0 44 44"><rect width="44" height="44" fill="#D9B46E"/><path d="M11 0v44M22 0v44M33 0v44M0 11h44M0 22h44M0 33h44" stroke="#3A2416" stroke-width="1.2"/><circle cx="22" cy="22" r="7.5" fill="#151515"/><circle cx="33" cy="11" r="7.5" fill="#F5F2EB"/></svg><span><b>Go</b><small>${who} · ${gs.N}×${gs.N} · ${gs.moves.length} moves · ${fmt((gs.clock?.ms || 0) + (gs.clock?.pen || 0))}</small></span><span class="go">→</span></a>`);
+}
+const MP_ICO = '<svg class="ico" viewBox="0 0 44 44"><rect width="44" height="44" fill="#1E1E24"/><path d="M10 34C10 22 16 14 22 18S30 30 34 10" fill="none" stroke="#ED691D" stroke-width="2.4" stroke-dasharray="1.5 4.5" stroke-linecap="round"/><circle cx="10" cy="34" r="4.5" fill="#ED691D"/><circle cx="22" cy="18" r="4.5" fill="#ED691D"/><circle cx="34" cy="10" r="4.5" fill="none" stroke="#F4E3B2" stroke-width="2"/></svg>';
+const mpLog = (() => { const l = read('mtrx-mp-log'); return Array.isArray(l) ? l : []; })(), mp = read('mtrx-mp-cur');
+const MP_N = [5, 10, 15, 20, 30];
+if (mp && Array.isArray(mp.words) && mp.words.length && (mp.phase === 'study' || mp.phase === 'recall')) {
+  const where = mp.phase === 'study' ? `word ${(mp.i || 0) + 1} of ${mp.words.length}` : mp.late != null ? 'long-term check' : 'recalling';
+  cards.push(`<a class="cc" href="memory.html">${MP_ICO}<span><b>Memory Palace</b><small>${LV[mp.level] || 'Training'}${mp.play === 'challenge' ? ' · Challenge' : ''} · ${where} · ${fmt(mp.clock?.ms || 0)}</small></span><span class="go">→</span></a>`);
+} else {
+  const now = Date.now(), H = 3600000;
+  const due = [...mpLog].reverse().find((e) => e && !e.late && e.words && now - e.t >= 12 * H && now - e.t < 168 * H);
+  if (due) cards.push(`<a class="cc" href="memory.html">${MP_ICO}<span><b>Memory Palace</b><small>Long-term check ready · ${due.n} words from ${new Date(due.t).toLocaleDateString([], { weekday: 'long' })}</small></span><span class="go">→</span></a>`);
 }
 if (cards.length) { $('#contRow').innerHTML = cards.join(''); $('#cont').hidden = false; }
 // best: the hardest level you've beaten, Challenge first
@@ -96,7 +117,25 @@ function bestLine(keyFor, label) {
 }
 $('#ckBest').textContent = bestLine((i, ch) => ['o', 'f'].map((j) => `mtrx-ck-best:${LID[i]}:${j}${ch ? ':c' : ''}`), 'Your best:');
 $('#csBest').textContent = bestLine((i, ch) => [`mtrx-cs-best:${LID[i]}${ch ? ':c' : ''}`], 'Your best:');
+$('#cwBest').textContent = bestLine((i, ch) => [`mtrx-cw-best:${LID[i]}${ch ? ':c' : ''}`], 'Your best:');
 $('#sdBest').textContent = bestLine((i, ch) => [`mtrx-sudoku-best-${CORE[i]}${ch ? '-c' : ''}`], 'Your best:');
+// go: fastest win on the hardest level you've beaten, bigger board first
+$('#goBest').textContent = (() => {
+  for (let i = 4; i >= 0; i--) for (const ch of [true, false]) for (const N of [13, 9]) {
+    const t = +(localStorage.getItem(`mtrx-go-best:${N}:${LID[i]}${ch ? ':c' : ''}`) || 0);
+    if (t) return `Your best: a win on ${LV[i]} · ${N}×${N}${ch ? ' · Challenge' : ''} in ${fmt(t)}`;
+  }
+  return '';
+})();
+// memory palace: daily streak and best score on the hardest level you've trained
+$('#mpBest').textContent = (() => {
+  if (!mpLog.length) return '';
+  const key = (t) => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; };
+  const days = new Set(mpLog.flatMap((e) => [e?.t, e?.late?.t]).filter(Boolean).map(key));
+  let n = 0, t = Date.now(); if (!days.has(key(t))) t -= 864e5; while (days.has(key(t))) { n++; t -= 864e5; }
+  const top = Math.max(...mpLog.map((e) => +e?.level || 0)), best = Math.max(...mpLog.filter((e) => (+e?.level || 0) === top).map((e) => +e?.correct || 0));
+  return `${n ? `Streak ${n} day${n === 1 ? '' : 's'} · ` : ''}Best ${best}/${MP_N[top] || '?'} on ${LV[top]}`;
+})();
 
 // ---------- soft reveal on scroll ----------
 const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 }) : null;
