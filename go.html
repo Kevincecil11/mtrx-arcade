@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Go · MTRX™ Arcade</title><meta name="description" content="Go (baduk, weiqi) on 9×9 and 13×13 against five tested computer levels, or two players up to 19×19. Chinese counting with dead-stone marking, illustrated lessons and drills. Designed by MTRX™.">
+<meta name="theme-color" content="#ECEAE4"><script>try{var t=localStorage.getItem("mtrx-theme");if(t===null)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"";document.documentElement.dataset.theme=t;if(t==="dark")document.querySelector('meta[name="theme-color"]').content="#0E0E0C"}catch(e){}</script>
+<link rel="stylesheet" href="assets/mtrx-theme.css?v=5"><link rel="stylesheet" href="assets/arcade.css?v=5"><link rel="stylesheet" href="assets/play.css?v=5"><link rel="stylesheet" href="assets/go.css?v=6">
+</head><body data-board="kaya" class="gs">
+<div class="topbar"><a href="index.html" id="home" aria-label="MTRX Arcade home"></a><span class="crumb">Go</span><span class="spacer"></span>
+<button class="icon-btn" id="learnBtn" aria-label="How to play and strategy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg><span>Learn</span></button>
+<button class="icon-btn" id="menuBtn" aria-label="Game menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button></div>
+<main class="ck-main">
+  <div class="bar drill-bar bsize" id="drillBar" hidden><div><span class="mtrx-label" style="margin:0">Drill</span><b id="drillTxt"></b></div><button class="mtrx-btn mtrx-btn--ghost sm" id="drillExit">Exit drill</button></div>
+  <div class="bar review-bar bsize" id="reviewBar" hidden><div><span class="mtrx-label" style="margin:0">Replay</span><b id="revTxt"></b></div>
+    <div class="btn-row"><button class="mtrx-btn mtrx-btn--ghost sm" id="revPrev" aria-label="Previous move">‹</button><button class="mtrx-btn mtrx-btn--ghost sm" id="revPlay">Play</button><button class="mtrx-btn mtrx-btn--ghost sm" id="revNext" aria-label="Next move">›</button><button class="mtrx-btn mtrx-btn--primary sm" id="revLive">Back to game</button></div></div>
+  <div class="bar score-bar bsize" id="scoreBar" hidden><div><span class="mtrx-label" style="margin:0">Counting</span><b id="scoreTxt"></b></div>
+    <div class="btn-row"><button class="mtrx-btn mtrx-btn--ghost sm" id="scoreBack">Keep playing</button><button class="mtrx-btn mtrx-btn--primary sm" id="scoreOk">Accept score</button></div></div>
+  <div class="hud bsize" aria-label="Players, captures and time">
+    <div class="who-hud" id="hudYou"><i class="gchip b" id="youChip"></i><span><small id="youName">You</small><b class="tray" id="trayYou"></b></span></div>
+    <button class="clock" id="clockBtn" aria-label="Pause"><span class="pen" id="pen"></span><span class="t"><svg class="pz" id="pz" viewBox="0 0 24 24" aria-hidden="true"></svg><b id="clock">0:00</b></span><small id="clockSub">Go</small></button>
+    <div class="who-hud right" id="hudAi"><span><small id="aiName">Computer</small><b class="tray" id="trayAi"></b></span><i class="gchip w" id="aiChip"></i></div>
+  </div>
+  <div class="gboard bsize" id="board"><svg id="gsvg" viewBox="0 0 10 10" role="img" aria-label="Go board"></svg><div class="overlay" id="overlay" hidden></div></div>
+  <div class="status-line bsize" id="status" aria-live="polite">Setting up the board…</div>
+  <div class="actions three bsize"><button class="mtrx-btn mtrx-btn--secondary" id="passBtn">Pass</button><button class="mtrx-btn mtrx-btn--secondary" id="undoBtn">Undo</button><button class="mtrx-btn mtrx-btn--primary" id="hintBtn">Best move</button></div>
+</main>
+<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Engine: Michi port (MIT) · v1</span><span>mtrxdigital.com</span></footer></div>
+<script>(function(){var s=document.getElementById("status");function show(m){if(!s)return;s.textContent="Something went wrong ("+m+"). Pull down to refresh. If it keeps happening, screenshot this.";s.className="status-line lose"}addEventListener("error",function(e){if(!e.filename||e.filename.indexOf(location.origin)===0)show(e.message||"script error")});addEventListener("unhandledrejection",function(e){var r=e.reason;show(String(r&&r.message||r))});setTimeout(function(){if(s&&s.textContent.indexOf("Setting up the board")===0)show("the game script did not start")},15000)})();</script>
+<script type="module" src="js/go.js?v=6"></script></body></html>

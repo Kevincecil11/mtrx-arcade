@@ -1,0 +1,72 @@
+/* MTRX Arcade · Go v1 · same shell as Chess and Checkers · Designed by MTRX™ · Property of MTRX Digital */
+body[data-board="kaya"]{--gb:#DDB56A;--gb2:#C99A4B;--gl:#3B2A12;--frame:#6B4A22}
+body[data-board="bamboo"]{--gb:#E8D3A2;--gb2:#D7BC80;--gl:#4A3A1C;--frame:#8A6A33}
+body[data-board="slate"]{--gb:#55606B;--gb2:#46505A;--gl:#C9D1D9;--frame:#2B3138}
+body[data-board="mtrx"]{--gb:#ECEAE4;--gb2:#E1DED6;--gl:#0E0E0C;--frame:#0E0E0C}
+.bsize{width:min(100%,640px,max(280px,calc(100svh - 290px)))}
+.gboard{position:relative;aspect-ratio:1;border-radius:var(--radius-md);background:radial-gradient(120% 100% at 30% 20%,var(--gb),var(--gb2));box-shadow:0 0 0 clamp(5px,1.2vw,9px) var(--frame),0 18px 40px rgb(14 14 12 / .22);user-select:none;-webkit-user-select:none;touch-action:none;flex:none}
+.gboard svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.gl{stroke:var(--gl);stroke-width:.035;stroke-linecap:square}
+.gl.edge{stroke-width:.06}
+.hoshi{fill:var(--gl)}
+body[data-board="mtrx"] .hoshi{fill:var(--mtrx-mars)}
+.coord{font:700 .32px var(--font-sans);fill:var(--gl);opacity:.7;text-anchor:middle;dominant-baseline:central}
+.st{transform-box:fill-box;transform-origin:center}
+.st circle.body{filter:drop-shadow(0 .05px .05px rgb(0 0 0 / .45))}
+.st.in{animation:stin var(--place,520ms) cubic-bezier(.25,.8,.3,1) both}
+@keyframes stin{0%{opacity:0;transform:scale(1.35) translateY(-8%)}70%{opacity:1;transform:scale(.97)}100%{transform:none}}
+.st.out{animation:stout var(--fade,640ms) ease-out forwards}
+@keyframes stout{to{opacity:0;transform:scale(.72)}}
+.st.dead{opacity:.38}
+.last{fill:none;stroke-width:.07}
+.ghost{opacity:.45;pointer-events:none;transition:opacity 260ms ease}
+.ghost.ai{opacity:0;animation:aighost var(--pre,420ms) ease forwards}
+@keyframes aighost{to{opacity:.5}}
+.ring{fill:none;stroke:var(--mtrx-jane);stroke-width:.06;animation:ring 2200ms ease-out forwards}
+@keyframes ring{0%{opacity:0;r:.25}18%{opacity:1;r:.42}100%{opacity:0;r:.5}}
+.hintpt{fill:none;stroke:var(--mtrx-mars);stroke-width:.09;animation:hp 1.2s ease-in-out infinite}
+@keyframes hp{50%{stroke-width:.16;opacity:.6}}
+.terr{opacity:.9}.terr.b{fill:#111}.terr.w{fill:#F7F4ED;stroke:#555;stroke-width:.02}
+.dg-mark{fill:none;stroke:var(--mtrx-mars);stroke-width:.08}
+.dg-x{stroke:var(--mtrx-steel-red);stroke-width:.09;stroke-linecap:round}
+.dg-num{font:700 .5px var(--font-sans);text-anchor:middle;dominant-baseline:central}
+/* HUD */
+.gchip{width:28px;height:28px;border-radius:50%;flex:none;transition:box-shadow 500ms ease}
+.gchip.b{background:radial-gradient(circle at 35% 30%,#666,#111 60%)}
+.gchip.w{background:radial-gradient(circle at 35% 30%,#fff,#d6d0c4 70%);box-shadow:inset 0 0 0 1px #bbb}
+.who-hud.turn .gchip{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--accent)}
+.who-hud.turn .gchip.w{box-shadow:inset 0 0 0 1px #bbb,0 0 0 3px var(--bg),0 0 0 5px var(--accent)}
+.actions.three{grid-template-columns:1fr 1fr 1fr}
+.review-bar{background:var(--mtrx-ink);color:var(--mtrx-canvas)}
+.review-bar .mtrx-label{color:var(--mtrx-steel)}
+.review-bar .mtrx-btn--ghost{color:var(--mtrx-canvas)}
+.drill-bar,.score-bar{background:var(--mtrx-jane);color:var(--mtrx-ink)}
+.drill-bar .mtrx-label,.score-bar .mtrx-label{color:var(--mtrx-arsenic)}.drill-bar .mtrx-btn--ghost,.score-bar .mtrx-btn--ghost{color:var(--mtrx-ink)}
+/* menu bits */
+.styles{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.styles button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius-md);font:700 var(--text-xs) var(--font-sans);cursor:pointer}
+.styles button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.sw{width:40px;height:40px;border-radius:8px;background:var(--b);box-shadow:0 0 0 3px var(--f);position:relative;overflow:hidden}
+.sw::before{content:"";position:absolute;inset:0;background:linear-gradient(var(--l),var(--l)) 50% 0/1.5px 100% no-repeat,linear-gradient(var(--l),var(--l)) 0 50%/100% 1.5px no-repeat}
+.vis{display:grid;grid-template-columns:150px minmax(0,1fr);gap:var(--space-4);align-items:start}
+.vis h3{margin:4px 0 6px!important;font-size:var(--text-lg)!important}.vis p{margin:0;font-size:var(--text-sm)}
+.vis .mtrx-numeral{font-size:26px}
+@media(max-width:480px){.vis{grid-template-columns:110px minmax(0,1fr)}}
+.mini{display:block;width:100%;height:auto;border-radius:6px;background:radial-gradient(120% 100% at 30% 20%,var(--gb),var(--gb2));box-shadow:0 0 0 3px var(--frame)}
+.mlist{display:flex;flex-direction:column;gap:4px}
+.mlist button{display:flex;gap:10px;align-items:center;text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:var(--radius-md);padding:8px 10px;cursor:pointer;font:700 var(--text-sm) var(--font-sans)}
+.mlist button:hover{border-color:var(--accent)}
+.mlist i{width:14px;height:14px;border-radius:50%;flex:none}.mlist i.b{background:#111}.mlist i.w{background:#F7F4ED;box-shadow:inset 0 0 0 1px #999}
+.mlist small{color:var(--text-muted);font-weight:400;margin-left:auto}
+.credits{font-size:var(--text-xs);color:var(--text-subtle)}
+@media(prefers-reduced-motion:reduce){.st.in,.st.out,.ring,.hintpt,.ghost.ai{animation:none}}
+[data-theme="dark"] .gboard{box-shadow:0 0 0 clamp(5px,1.2vw,9px) var(--frame),0 26px 60px rgb(0 0 0 / .65)}
+[data-theme="dark"] .gboard svg .gl,[data-theme="dark"] .gboard svg .hoshi{filter:brightness(.95)}
+[data-theme="dark"] .gboard{filter:brightness(.92) saturate(.95)}
+[data-theme="dark"] .review-bar{background:var(--surface-sunk);box-shadow:inset 3px 0 0 var(--mtrx-mars),inset 0 0 0 1px var(--border)}
+[data-theme="dark"] .drill-bar,[data-theme="dark"] .score-bar{background:#2A2619;color:var(--mtrx-jane);box-shadow:inset 0 0 0 1px #4A4227}
+[data-theme="dark"] .drill-bar .mtrx-label,[data-theme="dark"] .score-bar .mtrx-label{color:#BFB18A}[data-theme="dark"] .drill-bar .mtrx-btn--ghost,[data-theme="dark"] .score-bar .mtrx-btn--ghost{color:var(--mtrx-jane)}
+[data-theme="dark"] .mlist button,[data-theme="dark"] .styles button{background:#18181B}
+.gboard.shake{animation:bshake 420ms ease}
+@keyframes bshake{20%,60%{transform:translateX(-1.2%)}40%,80%{transform:translateX(1.2%)}}
+.who-hud b.tray{font-size:var(--text-sm);font-weight:700}
