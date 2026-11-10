@@ -1,0 +1,26 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Crossword · MTRX™ Arcade</title><meta name="description" content="Fresh crossword grids every game across five honest levels, from plain clues to riddles. Practice and Challenge modes, an on-screen keyboard and a full solving guide. Designed by MTRX™.">
+<meta name="theme-color" content="#ECEAE4"><script>try{var t=localStorage.getItem("mtrx-theme");if(t===null)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"";document.documentElement.dataset.theme=t;if(t==="dark")document.querySelector('meta[name="theme-color"]').content="#0E0E0C"}catch(e){}</script>
+<link rel="stylesheet" href="assets/mtrx-theme.css?v=5"><link rel="stylesheet" href="assets/arcade.css?v=5"><link rel="stylesheet" href="assets/play.css?v=5"><link rel="stylesheet" href="assets/crossword.css?v=6">
+</head><body class="cw">
+<div class="topbar"><a href="index.html" id="home" aria-label="MTRX Arcade home"></a><span class="crumb">Crossword</span><span class="spacer"></span>
+<button class="icon-btn" id="learnBtn" aria-label="How to play and strategy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg><span>Learn</span></button>
+<button class="icon-btn" id="menuBtn" aria-label="Game menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menu</span></button></div>
+<main class="cw-main">
+  <div class="cw-col">
+    <div class="hud wsize" aria-label="Progress, time and reveals">
+      <div class="who-hud"><i class="ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></i><span><small id="leftLbl">Solved</small><b id="solvedN">0/0</b></span></div>
+      <button class="clock" id="clockBtn" aria-label="Pause"><span class="pen" id="pen"></span><span class="t"><svg class="pz" id="pz" viewBox="0 0 24 24" aria-hidden="true"></svg><b id="clock">0:00</b></span><small id="clockSub">Crossword</small></button>
+      <div class="who-hud right"><span><small>Reveals</small><b id="revealsN">0</b></span><i class="ic"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></i></div>
+    </div>
+    <div class="cw-board" id="board"><div class="cw-grid" id="grid" role="grid" aria-label="Crossword grid"></div><div class="overlay" id="overlay" hidden></div></div>
+    <div class="cluebar wsize" id="clueBar"><button id="cluePrev" aria-label="Previous clue">‹</button><div class="txt" id="clueTxt" role="button" aria-live="polite" aria-label="Current clue, tap to switch direction"><small>Clue</small><span>Choose a level to start</span></div><button id="clueNext" aria-label="Next clue">›</button></div>
+    <div class="status-line wsize" id="status" aria-live="polite">Setting up…</div>
+    <div class="kbd wsize" id="kbd" aria-label="Keyboard"></div>
+    <div class="tools wsize" id="tools"><button class="tool" id="checkBtn"></button><button class="tool" id="revealBtn"></button><button class="tool" id="clearBtn"></button></div>
+  </div>
+  <aside class="clues" id="clues" aria-label="Clues"></aside>
+</main>
+<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Layout: Crossword Layout Generator (MIT) · v1</span><span>mtrxdigital.com</span></footer></div>
+<script>(function(){var s=document.getElementById("status");function show(m){if(!s)return;s.textContent="Something went wrong ("+m+"). Pull down to refresh. If it keeps happening, screenshot this.";s.className="status-line lose"}addEventListener("error",function(e){if(!e.filename||e.filename.indexOf(location.origin)===0)show(e.message||"script error")});addEventListener("unhandledrejection",function(e){var r=e.reason;show(String(r&&r.message||r))});setTimeout(function(){if(s&&s.textContent.indexOf("Setting up")===0)show("the game script did not start")},15000)})();</script>
+<script type="module" src="js/crossword.js?v=6"></script></body></html>
