@@ -1,0 +1,71 @@
+/* MTRX Arcade · Memory Palace v1 · same shell as the games · Designed by MTRX™ · Property of MTRX Digital */
+.mp-main{display:flex;flex-direction:column;align-items:center;gap:var(--space-3);padding-top:var(--space-4)}
+.msize{width:min(100%,640px)}
+.mp-wrap{position:relative;min-height:440px}
+.mp-wrap .overlay{border-radius:var(--radius-lg)}
+.mp-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);box-shadow:0 18px 40px rgb(14 14 12 / .08);margin-bottom:var(--space-3);animation:rise 520ms cubic-bezier(.2,.7,.2,1)}
+.mp-card h2{font-size:var(--text-2xl);margin:2px 0 var(--space-3)}
+.mp-card .row{margin-bottom:var(--space-3)}.mp-card .row .mtrx-label{margin-bottom:6px}
+.mp-card .mtrx-segmented{display:flex;flex-wrap:wrap;border-radius:var(--radius-lg)}
+.mp-card .mtrx-segmented button{flex:1 1 auto;padding:7px 10px;font-size:var(--text-xs)}
+.mp-card .go{width:100%;margin-top:var(--space-2)}
+.mp-card .note{color:var(--text-muted);font-size:var(--text-sm);margin:0 0 var(--space-3)}
+.opt-note{font-size:var(--text-xs);color:var(--text-muted);margin:6px 0 0}
+.opt-note.warn{color:var(--danger);font-weight:700}.opt-note.warn:empty{display:none}
+.linkish{background:none;border:0;padding:0;color:var(--accent);font:700 var(--text-xs) var(--font-sans);text-decoration:underline;cursor:pointer}
+.mp-late{border:2px solid var(--accent)}.mp-late h3{margin:4px 0 6px}
+.mp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2)}
+.mp-stats div{border:1px solid var(--border);border-radius:var(--radius-md);padding:10px 12px;background:var(--surface)}
+.mp-stats small{display:block;font:700 var(--text-xs) var(--font-sans);letter-spacing:.08em;text-transform:uppercase;color:var(--text-subtle)}
+.mp-stats b{font:400 26px/1.1 var(--font-display)}
+.who-hud .ic{width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:var(--surface-sunk);color:var(--text-muted)}
+.who-hud .ic svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.who-hud b{font-size:var(--text-base);max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* study */
+.mp-study{text-align:center}
+.mp-top{display:flex;justify-content:space-between;gap:8px}
+.mp-prog,.mp-timer{height:6px;border-radius:6px;background:var(--surface-sunk);overflow:hidden;margin:10px 0 var(--space-4)}
+.mp-prog i,.mp-timer i{display:block;height:100%;width:0;background:var(--accent);border-radius:6px;transition:width 400ms ease}
+.mp-timer i{background:var(--mtrx-gunmetal);transition:width 100ms linear}
+[data-theme="dark"] .mp-timer i{background:var(--mtrx-steel)}
+.mp-stop small{display:block;font:700 var(--text-xs) var(--font-sans);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.mp-stop b{font-size:var(--text-xl)}
+.mp-word{font:400 clamp(44px,11vw,84px)/1.05 var(--font-display);letter-spacing:.02em;margin:var(--space-5) 0 var(--space-3);animation:wordin 620ms cubic-bezier(.2,.8,.2,1);word-break:break-word}
+@keyframes wordin{0%{opacity:0;transform:translateY(14px) scale(.96);filter:blur(4px)}100%{opacity:1;transform:none;filter:none}}
+.mp-tip{color:var(--text-muted);font-size:var(--text-sm);margin:0 0 var(--space-3)}
+.mp-wrap.veil .mp-word,.mp-wrap.veil .mp-stop b,.mp-wrap.veil .mp-list,.mp-wrap.veil .mp-tip{visibility:hidden}
+/* recall */
+.mp-list,.mp-review{list-style:none;margin:0 0 var(--space-4);padding:0;display:flex;flex-direction:column;gap:6px}
+.mp-list li{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1.4fr) auto;gap:8px;align-items:center}
+.mp-list .n,.mp-review .n{font:400 20px/1 var(--font-display);color:var(--text-subtle);text-align:right}
+.mp-list .cue{font-size:var(--text-sm);color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-list input{min-width:0;height:44px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);color:var(--text);padding:0 12px;font:700 var(--text-base) var(--font-sans);text-transform:uppercase;transition:border-color 200ms ease,box-shadow 200ms ease}
+.mp-list input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgb(237 105 29 / .25)}
+.peek{border:1px solid var(--border);background:transparent;color:var(--text-muted);border-radius:var(--radius-pill);padding:6px 10px;font:700 var(--text-xs) var(--font-sans);cursor:pointer}
+.peek:disabled{opacity:.4;cursor:default}
+/* result */
+.mp-result .big{font:400 64px/1 var(--font-display);color:var(--accent);margin:4px 0 6px}
+.mp-result .big small{font-size:28px;color:var(--text-subtle)}
+.mp-review li{display:grid;grid-template-columns:28px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 22px;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;font-size:var(--text-sm)}
+.mp-review .cue{color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-review li em{font-style:normal;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mp-review li i{font-style:normal;font-weight:700;text-align:center}
+.mp-review li.ok,.mp-review li.typo{background:color-mix(in srgb,var(--success) 12%,transparent)}
+.mp-review li.ok i,.mp-review li.typo i{color:var(--success)}
+.mp-review li.wrong i,.mp-review li.blank i{color:var(--danger)}
+.mp-review li.moved,.mp-review li.peek{background:color-mix(in srgb,var(--mtrx-jane) 45%,transparent)}
+.hint-line{font-size:var(--text-xs);color:var(--text-subtle);margin:var(--space-3) 0 0}
+@media(max-width:520px){.mp-review li{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr) 20px}.mp-review .cue{display:none}.mp-list li{grid-template-columns:24px minmax(0,.8fr) minmax(0,1.4fr) auto}}
+/* menu: palaces, progress */
+.mp-name{width:100%;margin-bottom:8px}
+.mp-ta{width:100%;min-height:170px;resize:vertical;font:400 var(--text-sm)/1.55 var(--font-sans);padding:10px 12px}
+.mp-chart{width:100%;height:auto;display:block;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface)}
+.mp-chart .ax{stroke:var(--border);stroke-width:1}
+.mp-chart .ln{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.mp-chart circle{fill:var(--accent)}
+.mp-chart text{font:700 9px var(--font-sans);fill:var(--text-subtle)}
+.credits{font-size:var(--text-xs);color:var(--text-subtle)}
+.lesson .ex{font-weight:700;color:var(--text)}
+@media(prefers-reduced-motion:reduce){.mp-card,.mp-word{animation:none}}
+[data-theme="dark"] .mp-card{box-shadow:0 26px 60px rgb(0 0 0 / .5)}
+[data-theme="dark"] .mp-list input{background:#18181B}
