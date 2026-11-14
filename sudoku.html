@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sudoku · MTRX™ Arcade</title><meta name="description" content="Sudoku with five honest difficulty levels, Practice and Challenge modes, live technique coaching and a full strategy guide. Designed by MTRX™.">
 <meta name="theme-color" content="#ECEAE4"><script>try{var t=localStorage.getItem("mtrx-theme");if(t===null)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"";document.documentElement.dataset.theme=t;if(t==="dark")document.querySelector('meta[name="theme-color"]').content="#0E0E0C"}catch(e){}</script>
-<link rel="stylesheet" href="assets/mtrx-theme.css?v=5"><link rel="stylesheet" href="assets/arcade.css?v=5"><link rel="stylesheet" href="assets/play.css?v=5"><link rel="stylesheet" href="assets/sudoku.css?v=5">
+<link rel="stylesheet" href="assets/mtrx-theme.css?v=5"><link rel="stylesheet" href="assets/arcade.css?v=5"><link rel="stylesheet" href="assets/play.css?v=5"><link rel="stylesheet" href="assets/sudoku.css?v=6">
 </head><body class="sd">
 <div class="topbar"><a href="index.html" id="home" aria-label="MTRX Arcade home"></a><span class="crumb">Sudoku</span><span class="spacer"></span>
 <button class="icon-btn" id="learnBtn" aria-label="How to play and techniques"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg><span>Learn</span></button>
@@ -25,6 +25,6 @@
     </div>
   </div>
 </main>
-<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Engine: sudoku-core (MIT) · v4</span><span>mtrxdigital.com</span></footer></div>
+<div class="footer-wrap"><footer class="mtrx-credit"><span>Designed by MTRX™</span><span>Engine: sudoku-core (MIT) · v4.1</span><span>mtrxdigital.com</span></footer></div>
 <script>(function(){var s=document.getElementById("status");function show(m){if(!s)return;s.textContent="Something went wrong ("+m+"). Pull down to refresh. If it keeps happening, screenshot this.";s.className="status-line lose"}addEventListener("error",function(e){if(!e.filename||e.filename.indexOf(location.origin)===0)show(e.message||"script error")});addEventListener("unhandledrejection",function(e){var r=e.reason;show(String(r&&r.message||r))});setTimeout(function(){if(s&&s.textContent.indexOf("Loading the engine")===0)show("the game script did not start")},20000)})();</script>
-<script type="module" src="js/sudoku.js?v=5"></script></body></html>
+<script type="module" src="js/sudoku.js?v=6"></script></body></html>

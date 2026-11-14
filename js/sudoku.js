@@ -1,6 +1,7 @@
-// MTRX™ Arcade · Sudoku v4. Engine: sudoku-core (MIT). UI, levels, coaching and shell: Designed by MTRX™
+// MTRX™ Arcade · Sudoku v4.1. Engine: sudoku-core (MIT). UI, levels, coaching, hint ladder and shell: Designed by MTRX™
 import { WORDMARK } from './wordmark.js?v=5';
-import { mountLearn, randInt } from './learn.js?v=5';
+import { mountLearn, rand } from './learn.js?v=5';
+import { createHintSession } from './sudoku-hints.js?v=6';
 import { applyTheme } from './theme.js?v=5';
 
 const ENGINE = ['https://cdn.jsdelivr.net/npm/sudoku-core@4/+esm', 'https://esm.sh/sudoku-core@4'];
@@ -28,6 +29,7 @@ const savePrefs = () => localStorage.setItem('mtrx-sd-prefs', JSON.stringify(P))
 let lib = null, worker = null;
 let S = null; // { idx, level, seed, givens, values, notes, solution, mistakes, hints, play, clock: {ms, since, pen}, done, result, analysis }
 let history = [], sel = -1, notesMode = false, hintMarks = null, paused = false, autoPaused = false;
+let hs = null; // the hint ladder for the board as it stands: { sig, s }
 const fx = new Map(); // cell → { cls, until, d }: short-lived effects that survive re-renders
 const row = (i) => Math.floor(i / 9), col = (i) => i % 9, box = (i) => Math.floor(row(i) / 3) * 3 + Math.floor(col(i) / 3);
 const peers = (i) => { const p = []; for (let j = 0; j < 81; j++) if (j !== i && (row(j) === row(i) || col(j) === col(i) || box(j) === box(i))) p.push(j); return p; };
@@ -158,8 +160,8 @@ function showBuilding(L) {
 function snapshot() { return { values: S.values.slice(), notes: S.notes.map((n) => new Set(n)) }; }
 function input(d) {
   if (!S || S.done || paused || sel < 0 || S.givens[sel] != null) return;
-  hintMarks = null;
   history.push(snapshot());
+  const before = S.values[sel];
   if (d === 0) { S.values[sel] = null; S.notes[sel].clear(); }
   else if (notesMode) { if (S.values[sel] == null) S.notes[sel].has(d) ? S.notes[sel].delete(d) : S.notes[sel].add(d); }
   else {
@@ -180,9 +182,10 @@ function input(d) {
       }
     }
   }
+  if (S.values[sel] !== before) clearHint(); // the board moved on, so the next Teach me starts a fresh ladder
   startClock(); checkWin(); render(); save();
 }
-function undo() { if (!S || !history.length || S.done || paused) return; const h = history.pop(); S.values = h.values; S.notes = h.notes; hintMarks = null; render(); save(); }
+function undo() { if (!S || !history.length || S.done || paused) return; const h = history.pop(); S.values = h.values; S.notes = h.notes; clearHint(); render(); save(); }
 
 addEventListener('keydown', (e) => {
   if (!S || e.target.closest('.drawer') || e.target.closest('input') || menu.isOpen()) return;
@@ -226,11 +229,12 @@ function render() {
       if (f && f.until > now) { cls += ' ' + f.cls; c.style.setProperty('--d', `${f.d}ms`); } else if (f) fx.delete(i);
       c.className = cls;
       // only touch the DOM when the content changes, so the pop animation is never restarted
-      const k = v != null ? `v${v}` : S.notes[i].size ? `n${[...S.notes[i]].sort().join('')}` : '';
+      const mk = v == null && !paused ? hintMarks?.cand?.get(i) : null; // hint marks: x = crossed out (red), g = pattern (green)
+      const k = v != null ? `v${v}` : S.notes[i].size || mk ? `n${[...S.notes[i]].sort().join('')}${mk ? `|${[...mk].map(([d, t]) => t + d).sort().join('')}` : ''}` : '';
       if (k !== c._k) {
         c._k = k;
         if (v != null) c.innerHTML = `<span class="v">${v}</span>`;
-        else if (S.notes[i].size) c.innerHTML = `<span class="notes">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<span>${S.notes[i].has(d) ? d : ''}</span>`).join('')}</span>`;
+        else if (k) c.innerHTML = `<span class="notes">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => { const t = mk?.get(d); return t ? `<span class="hm ${t}">${d}</span>` : `<span>${S.notes[i].has(d) ? d : ''}</span>`; }).join('')}</span>`;
         else c.textContent = '';
       }
       c.setAttribute('aria-label', `Row ${row(i) + 1}, column ${col(i) + 1}, ${v ?? 'empty'}`);
@@ -245,6 +249,8 @@ function render() {
   $('#undoBtn').disabled = off || !history.length;
   const ch = challenge();
   $('#hintBtn').hidden = ch; $('#tools').classList.toggle('three', ch); $('#hintBtn').disabled = off || !lib;
+  const live = liveHints(), hl = live?.s.cur?.nextLabel ? `Hint ${live.s.cur.n + 1}` : 'Teach me', hb = $('#hintBtn').lastChild; // Teach me becomes Hint 2, Hint 3…
+  if (hb?.nodeType === 3 && hb.textContent !== hl) hb.textContent = hl;
   // HUD
   $('#mist').textContent = S ? S.mistakes : 0; $('#hudMist').classList.toggle('bad', !!S && S.mistakes > 0);
   $('#rightLbl').textContent = ch ? 'Penalty' : 'Hints';
@@ -258,35 +264,38 @@ function render() {
 // effects expire on their own; one quiet re-render picks that up
 setInterval(() => { if (fx.size) render(); }, 700);
 
-// ---------- coaching: real technique explanations on YOUR board ----------
+// ---------- coaching: a ladder of hints on YOUR board ----------
+// Hint 1 is the easiest logical step. Not useful to you? Hint 2 builds on it, and so on, until a digit you can
+// place. From a digit, the next hint finds a different cell. Tapping Teach me again climbs the same ladder.
+const boardSig = () => S.values.map((v) => v || 0).join('');
+const liveHints = () => (hs && S && hs.sig === boardSig() ? hs : null);
+function clearHint() { hs = null; hintMarks = null; $('#hintHost').innerHTML = ''; }
 function teach() {
   if (!S || S.done || !lib || paused || challenge()) return;
-  const wrong = S.values.findIndex((v, i) => v != null && S.givens[i] == null && v !== S.solution[i]);
-  if (wrong >= 0) {
-    sel = wrong; hintMarks = { region: new Set(), related: new Set(), focus: wrong };
-    showHint('Fix this cell first', `The ${S.values[wrong]} in row ${row(wrong) + 1}, column ${col(wrong) + 1} is not part of the solution. Logic can't continue from a wrong digit.`, null);
-    S.hints++; render(); save(); return;
+  const live = liveHints();
+  if (live) {
+    const cur = live.s.cur, h = cur?.kind === 'fix' ? null : live.s.next();
+    if (h) showHint(h, true); else if (cur) showHint(cur, false); // nothing new: show the last hint again, free
+    return;
   }
-  let tip = null;
-  try { tip = lib.teachHint(S.values.slice()); } catch { tip = null; }
-  if (!tip) {
-    const empty = S.values.map((v, i) => (v == null ? i : -1)).filter((i) => i >= 0);
-    const i = empty[randInt(empty.length)];
-    hintMarks = { region: new Set(), related: new Set(), focus: i }; sel = i;
-    showHint('Reveal', `No named technique applies cleanly here, so this is the answer for row ${row(i) + 1}, column ${col(i) + 1}.`, { cell: i, digit: S.solution[i] });
-  } else {
-    hintMarks = { region: new Set(tip.regionCells || []), related: new Set(tip.relatedCells || []), focus: tip.focusCell ?? -1 };
-    if (tip.focusCell != null) sel = tip.focusCell;
-    const place = tip.digit != null && tip.focusCell != null && S.solution[tip.focusCell] === tip.digit ? { cell: tip.focusCell, digit: tip.digit } : null;
-    showHint(tip.label || 'Next step', tip.explanation || 'Look at the highlighted cells.', place);
-  }
-  S.hints++; render(); save();
+  hs = { sig: boardSig(), s: createHintSession({ lib, values: S.values, solution: S.solution, rand }) };
+  const h = hs.s.first();
+  if (h) showHint(h, true); else clearHint();
 }
-function showHint(title, text, place) {
-  $('#hintHost').innerHTML = `<div class="hintcard"><div class="mtrx-label" style="margin:0">Technique</div><b style="font-size:var(--text-lg)">${title}</b><p>${text}</p>
-  <div class="btn-row">${place ? `<button class="mtrx-btn mtrx-btn--primary sm" id="placeIt">Place the ${place.digit}</button>` : ''}<button class="mtrx-btn mtrx-btn--ghost sm" id="hideHint">Got it</button></div></div>`;
-  $('#hideHint').onclick = () => { $('#hintHost').innerHTML = ''; hintMarks = null; render(); };
-  if (place) $('#placeIt').onclick = () => { sel = place.cell; const nm = notesMode; notesMode = false; input(place.digit); notesMode = nm; $('#hintHost').innerHTML = ''; };
+function showHint(h, isNew) {
+  if (isNew) S.hints++;
+  const cand = new Map(), mark = ([i, d], t) => { if (S.values[i] != null) return; if (!cand.has(i)) cand.set(i, new Map()); cand.get(i).set(d, t); };
+  h.g.forEach((m) => mark(m, 'g')); h.x.forEach((m) => mark(m, 'x'));
+  hintMarks = { region: new Set(h.region), related: new Set(h.related), focus: h.focus ?? -1, cand };
+  sel = h.kind === 'elim' ? -1 : h.focus; // an elimination has no cell to fill, so clear the selection and let the marks show
+  const place = (h.kind === 'place' || h.kind === 'reveal') && h.focus >= 0 && S.solution[h.focus] === h.digit;
+  $('#hintHost').innerHTML = `<div class="hintcard"><div class="mtrx-label" style="margin:0">${h.tag}</div><b style="font-size:var(--text-lg)">${h.label}</b><p>${h.text}</p>
+  <div class="btn-row">${place ? `<button class="mtrx-btn mtrx-btn--primary sm" id="placeIt">Place the ${h.digit}</button>` : ''}${h.nextLabel ? `<button class="mtrx-btn ${place ? 'mtrx-btn--secondary' : 'mtrx-btn--primary'} sm" id="nextHint">${h.nextLabel}</button>` : ''}<button class="mtrx-btn mtrx-btn--ghost sm" id="hideHint">Got it</button></div>${h.canSkip ? '<button class="skip-link" id="skipHint">Skip to the digit</button>' : ''}</div>`;
+  $('#hideHint').onclick = () => { $('#hintHost').innerHTML = ''; hintMarks = null; render(); }; // the ladder stays: Teach me gives the next hint
+  const nx = $('#nextHint'); if (nx) nx.onclick = teach;
+  const sk = $('#skipHint'); if (sk) sk.onclick = () => { const live = liveHints(), h2 = live?.s.skip(); if (h2) showHint(h2, true); };
+  if (place) $('#placeIt').onclick = () => { sel = h.focus; const nm = notesMode; notesMode = false; input(h.digit); notesMode = nm; };
+  render(); save();
 }
 
 // ---------- lifecycle ----------
@@ -295,7 +304,7 @@ function checkWin() {
   stopClock(); S.done = true;
   const time = elapsed(), k = bestKey(), best = bestFor(k), newBest = !best || time < best;
   if (newBest) localStorage.setItem(k, time);
-  S.result = { time, newBest }; sel = -1; hintMarks = null; $('#hintHost').innerHTML = '';
+  S.result = { time, newBest }; sel = -1; clearHint();
   wave([...Array(81).keys()], 40);
   setStatus(`Solved in ${fmt(time)}`, 'win');
   setTimeout(() => { if (S?.done) showResult(); }, REDUCED ? 0 : 1300);
@@ -307,7 +316,7 @@ function save() {
 function newPuzzle(seed, idx = P.level, coreOverride, play = P.play) {
   const L = LEVELS[idx]; const core = coreOverride || L.core;
   seed = seed ?? crypto.getRandomValues(new Uint32Array(1))[0] % 1e9;
-  S = null; history = []; hintMarks = null; sel = -1; paused = false; autoPaused = false; fx.clear();
+  S = null; history = []; hs = null; hintMarks = null; sel = -1; paused = false; autoPaused = false; fx.clear();
   grid.classList.remove('veil'); $('#hintHost').innerHTML = ''; clockShown = '';
   showBuilding(L); setStatus(''); render(); tick();
   worker?.terminate();
@@ -364,7 +373,7 @@ function mountGameTab(body) {
   bindSegs(body, (k, v) => { if (k === 'theme') { applyTheme(v); localStorage.setItem('mtrx-theme', v); } });
 }
 const MODES_HTML = `<h3>Ways to play</h3>
-  <div class="lesson"><b>Practice</b><p style="margin:6px 0 0"><b>Teach me</b> finds the next logical step on your board, highlights the cells it uses and explains the technique. Mistakes show in red if you want them to.</p></div>
+  <div class="lesson"><b>Practice</b><p style="margin:6px 0 0"><b>Teach me</b> finds the next logical step on your board, highlights the cells it uses and explains the technique. Not useful to you? <b>Hint 2</b> builds on it, step by step, until you reach a digit you can place. Mistakes show in red if you want them to.</p></div>
   <div class="lesson"><b>Challenge</b><p style="margin:6px 0 0">No coaching. Every wrong digit adds <b>0:30</b> to your clock. Your times go on a separate best-times board.</p></div>
   <div class="lesson"><b>Pause</b><p style="margin:6px 0 0">Tap the clock or press <kbd>P</kbd>. Opening the menu or leaving the tab pauses on its own, and the grid hides until you resume.</p></div>
   <h3>The five levels</h3>`;
@@ -376,7 +385,7 @@ const menu = mountLearn({
   tabs: [
     { name: 'Game', get html() { return gameTabHTML(); }, mount: mountGameTab },
     { name: 'How to play', html: `<h3>The rule</h3><p>Fill the grid so every <b>row</b>, every <b>column</b> and every <b>3×3 box</b> contains the digits 1 to 9 exactly once. Every puzzle here has <b>one solution</b>, reachable by logic alone. You never need to guess.</p>
-      <h3>Controls</h3><ul><li>Tap a cell, then a number. Or type <kbd>1</kbd>–<kbd>9</kbd>.</li><li><kbd>N</kbd> toggles notes (pencil marks). <kbd>Backspace</kbd> erases. Arrow keys move.</li><li><b>Teach me</b> (Practice mode) finds the next logical step on your board, highlights the cells it uses and explains the technique.</li><li>Every puzzle has a number like <b>L4-1234567</b>. Share it and a friend gets the same puzzle.</li></ul>
+      <h3>Controls</h3><ul><li>Tap a cell, then a number. Or type <kbd>1</kbd>–<kbd>9</kbd>.</li><li><kbd>N</kbd> toggles notes (pencil marks). <kbd>Backspace</kbd> erases. Arrow keys move.</li><li><b>Teach me</b> (Practice mode) finds the next logical step on your board, highlights the cells it uses and explains the technique. Red digits are crossed out, green ones are the pattern that proves it.</li><li>Don't want that hint? Tap <b>Hint 2</b> (or Teach me again). Each hint builds on the last until you reach a digit you can place, and <b>Skip to the digit</b> jumps straight there. From a digit, the next hint finds a different cell.</li><li>Every puzzle has a number like <b>L4-1234567</b>. Share it and a friend gets the same puzzle.</li></ul>
       ${MODES_HTML}${LEVELS.map((l) => `<div class="lesson"><b>${l.name}</b><span class="mtrx-tag lvl">${l.core}</span><p style="margin:6px 0 0">${l.needs}</p></div>`).join('')}
       <p>Levels are rated by the <b>hardest technique a puzzle actually needs</b>, not by how many clues it shows. That's why Easy is genuinely easy and Expert is genuinely hard.</p>` },
     { name: 'Core techniques', html: `
