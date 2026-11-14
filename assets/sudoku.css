@@ -1,4 +1,4 @@
-/* MTRX Arcade · Sudoku v4 · same shell as Checkers · Designed by MTRX™ · Property of MTRX Digital */
+/* MTRX Arcade · Sudoku v4.1 · same shell as Checkers · Designed by MTRX™ · Property of MTRX Digital */
 .sd-main{display:flex;flex-direction:column;align-items:center;gap:var(--space-3);padding-top:var(--space-4)}
 .ssize{width:min(100%,560px,max(280px,calc((100svh - 320px) / 1.14)))}
 .sd-board{position:relative;aspect-ratio:1;flex:none}
@@ -13,7 +13,7 @@
 .cell.same{background:color-mix(in srgb,var(--surface) 65%,var(--mtrx-mars))}
 .cell.sel{background:var(--mtrx-jane);color:var(--mtrx-ink)}
 .cell.wrong{color:var(--mtrx-steel-red)!important}
-.cell.hint-region{background:color-mix(in srgb,var(--surface) 70%,var(--mtrx-steel))}
+.cell.hint-region{background:color-mix(in srgb,var(--surface) 84%,var(--mtrx-moss))}
 .cell.hint-rel{box-shadow:inset 0 0 0 2px var(--mtrx-gunmetal)}
 .cell.hint-focus{box-shadow:inset 0 0 0 3px var(--mtrx-mars);background:var(--mtrx-jane);color:var(--mtrx-ink)}
 .cell .v{display:block}
@@ -26,6 +26,11 @@
 .grid.veil .cell{color:transparent!important}.grid.veil .notes{visibility:hidden}
 .notes{position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);font:700 clamp(8px,1.5vw,11px)/1 var(--font-sans);color:var(--text-muted)}
 .notes span{display:flex;align-items:center;justify-content:center}
+/* hint marks, drawn only while a hint is open: green = the pattern that proves it, red = crossed out */
+.notes .hm{margin:7%;border-radius:50%;font-weight:800;animation:hmin 460ms cubic-bezier(.2,.7,.2,1) both}
+.notes .hm.g{background:color-mix(in srgb,var(--mtrx-moss) 22%,transparent);color:var(--mtrx-moss)}
+.notes .hm.x{background:color-mix(in srgb,var(--mtrx-steel-red) 15%,transparent);color:var(--mtrx-steel-red);text-decoration:line-through;text-decoration-thickness:2px}
+@keyframes hmin{from{opacity:0;transform:scale(.5)}}
 .grid.empty .cell{background:var(--surface)}
 /* number pad + tools */
 .pad{display:grid;grid-template-columns:repeat(9,1fr);gap:6px}
@@ -50,6 +55,8 @@
 /* coaching card */
 .hintcard{border:2px solid var(--accent);border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5);background:var(--surface);animation:rise 520ms cubic-bezier(.2,.7,.2,1)}
 .hintcard p{margin:var(--space-2) 0 var(--space-3);color:var(--text-muted);font-size:var(--text-sm)}
+.skip-link{display:block;margin-top:var(--space-3);padding:0;border:0;background:none;color:var(--text-muted);font:700 var(--text-xs) var(--font-sans);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.skip-link:hover{color:var(--text)}
 .building{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text-muted);font-weight:700;font-size:var(--text-sm);margin-top:var(--space-3)}
 .pnum{font-variant-numeric:tabular-nums}
 .numform{display:flex;gap:8px}.numform input{flex:1;min-width:0}
@@ -67,8 +74,9 @@
   .pad{grid-template-columns:repeat(3,1fr);gap:8px}.pad button{aspect-ratio:1.25/1;font-size:26px}
   .status-line{text-align:left}
 }
-@media(prefers-reduced-motion:reduce){.cell.pop .v,.cell.shake .v,.cell.wave::after,.hintcard{animation:none}}
+@media(prefers-reduced-motion:reduce){.cell.pop .v,.cell.shake .v,.cell.wave::after,.hintcard,.notes .hm{animation:none}}
 [data-theme="dark"] .grid{background:#4A4C55;border-color:#6E7180;box-shadow:0 0 0 1px rgb(255 255 255 / .04),0 26px 60px rgb(0 0 0 / .6)}
 [data-theme="dark"] .mini{background:#4A4C55;border-color:#6E7180}
 [data-theme="dark"] .cell.sel{box-shadow:inset 0 0 0 2px var(--mtrx-mars)}
 [data-theme="dark"] .hintcard,[data-theme="dark"] .pad button{background:#18181B}
+[data-theme="dark"] .notes .hm.g{color:#C9D18E}[data-theme="dark"] .notes .hm.x{color:#E8948A}
